@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Enums for type safety ---
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  USER
+}
+
+enum SubscriptionType {
+  FREE
+  PRO
+  BUSINESS
+  ENTERPRISE
+  TEAM
+  TRIAL
+  LIFETIME
+  STUDENT
+  CUSTOM
+}
+
+enum ActionType {
+  GET
+  CREATE
+  UPDATE
+  DELETE
+  IMPORT
+  EXPORT
+  FORGOTPASSWORD
+  RESETPASSWORD
+}
+
+/// Représente un utilisateur de l'application.
+/// Contient les informations personnelles de base (nom, email, téléphone, etc.).
+
+model User {
+  id               String           @id @default(uuid())
+  firstName        String?
+  lastName         String?
+  dateOfBirth      String?
+  title            String?
+  email            String
+  emailVerified    Boolean?
+  image            String?
+  phone            String?
+  isVerified       Boolean          @default(false)
+  subscriptionType SubscriptionType @default(FREE)
+  isActive         Boolean          @default(true)
+  twoFactorEnabled Boolean          @default(false) // Champ requis par Better Auth pour le plugin twoFactor
+
+  // Stripe subscription fields
+  stripeCustomerId     String?   @unique // ID du client dans Stripe
+  stripeSubscriptionId String?   @unique // ID de l'abonnement actif
+  subscriptionStatus   String? // active, canceled, past_due, etc. (depuis Stripe)
+  subscriptionEndDate  DateTime? // Date de fin d'abonnement (si annulé)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sessions        Session[]
+  accounts        Account[]
+  loginHistory    LoginHistory[]
+  twoFactors      TwoFactor[]
+  lessonProgress  LessonProgress[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+/// Représente une session utilisateur active dans l'application.
+/// Stocke les informations de connexion (token, expiration, IP, user agent).
+/// Utilisée pour gérer l'authentification et la sécurité des sessions.
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+/// Représente un compte d'authentification externe lié à un utilisateur.
+/// Permet la connexion via OAuth (Google, GitHub, etc.) ou email/password.
+/// Stocke les tokens d'accès et les informations spécifiques au provider (ex: GitHub App installation).
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerName          String?
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  // GitHub App installation fields
+  installationId      String? // ID de l'installation GitHub App
+  installationType    String? // "User" ou "Organization"
+  installationLogin   String? // Login du compte/org où l'app est installée
+  repositorySelection String? // "all" ou "selected"
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+/// Stocke les codes de vérification temporaires (email, mot de passe oublié, etc.).
+/// Chaque enregistrement a une date d'expiration pour la sécurité.
+/// Utilisé pour les processus de vérification d'email, réinitialisation de mot de passe, etc.
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+/// Historique des connexions d'un utilisateur.
+/// Enregistre chaque tentative de connexion avec le provider utilisé et la date/heure.
+/// Utile pour le suivi de sécurité et l'audit des accès.
+
+model LoginHistory {
+  id             String   @id @default(uuid())
+  providerName   String
+  loginTimestamp DateTime @default(now())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("loginHistory")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+/// Progression des leçons par utilisateur (courseSlug-lessonSlug).
+/// Synchronisée avec le client (localStorage when offline, API when online).
+
+model LessonProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progressKey String   // "courseSlug-lessonSlug"
+  completedAt DateTime @default(now())
+
+  @@unique([userId, progressKey])
+  @@index([userId])
+  @@map("lessonProgress")
+}

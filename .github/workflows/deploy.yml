@@ -1,0 +1,164 @@
+name: Déploiement Santu Academy
+
+# Ce workflow se déclenche manuellement uniquement
+on:
+  # Déclenche le workflow manuellement depuis l'interface GitHub
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du déploiement"
+        required: false
+        default: "Déploiement Santu Academy manuel"
+
+# Variables d'environnement utilisées dans le workflow
+# Ces variables sont partagées par tous les jobs du workflow
+env:
+  REGISTRY: ghcr.io # GitHub Container Registry - où sont stockées nos images Docker
+  IMAGE_NAME: ${{ github.repository }} # Nom du repository GitHub (ex: aboubacar3012/santu-academy)
+
+# ================================================================================================
+# JOBS DE CONSTRUCTION (BUILD) - Ces jobs créent les images Docker
+# ================================================================================================
+
+jobs:
+  # Job 1: Construction de l'image Santu Academy
+  # Ce job créé une image Docker contenant notre application Node.js
+  build-santu-academy:
+    # Condition : Ce job s'exécute lors d'un déclenchement manuel
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
+
+    steps:
+      # Étape 1: Télécharger le code source
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Étape 2: Supprimer l'ancien fichier .env s'il existe
+      - name: Clean old .env file
+        run: rm -f .env
+
+      # Étape 3: Créer le fichier .env à partir des variables du dépôt (vars)
+      - name: Create .env from vars
+        run: |
+          {
+            echo "DATABASE_URL=${{ vars.DATABASE_URL }}"
+            echo "BETTER_AUTH_SECRET=${{ vars.BETTER_AUTH_SECRET }}"
+            echo "NEXT_PUBLIC_AUTH_SECRET=${{ vars.NEXT_PUBLIC_AUTH_SECRET }}"
+            echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}"
+          } > .env
+
+      # Étape 4: Se connecter au registre Docker
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.PAT_GITHUB_TOKEN }}
+
+      # Étape 5: Rendre le script de construction Santu Academy exécutable
+      - name: Make Santu Academy script executable
+        run: chmod +x build-santu-academy-image.sh
+
+      # Étape 6: Construire et publier l'image Santu Academy
+      - name: Build Santu Academy image
+        run: |
+          # Réponses automatiques au script :
+          # - 'n' : Ne pas exécuter l'image localement
+          # - 'y' : Publier l'image sur GitHub Container Registry
+          echo -e "n\ny" | ./build-santu-academy-image.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ================================================================================================
+  # JOBS DE DÉPLOIEMENT (DEPLOY) - Ces jobs déploient les conteneurs sur le serveur
+  # ===============================================================================================
+
+  # Job 4: Production du conteneur Santu Academy
+  # Ce job prend l'image Santu Academy créée et la déploie sur le serveur de production
+  deploy-santu-academy:
+    # Condition : Ce job s'exécute lors d'un déclenchement manuel
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [build-santu-academy] # Ce job attend que build-santu-academy soit terminé
+
+    steps:
+      # Étape unique : Se connecter au serveur et déployer Santu Academy
+      - name: "Production Santu Academy sur le serveur de production"
+        # Cette étape s'exécute si le job build-santu-academy a réussi
+        if: needs.build-santu-academy.result == 'success'
+        shell: bash
+        run: |
+          # Arrêter le script en cas d'erreur
+          set -e
+
+          # Créer le dossier SSH et configurer la clé privée
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Se connecter au serveur production via SSH et exécuter les commandes de déploiement
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << EOF
+            echo "Authentification à GitHub Container Registry..."
+            # Se connecter au registre Docker de GitHub sur le serveur
+            echo "${{ secrets.PAT_GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            echo "Arrêt et suppression du conteneur Santu Academy existant s'il existe..."
+            # Arrêter le conteneur Santu Academy s'il tourne déjà
+            docker stop santu-academy || true
+            # Supprimer le conteneur Santu Academy s'il existe
+            docker rm santu-academy || true
+            # Supprimer l'ancienne image Santu Academy pour économiser l'espace
+            docker rmi ghcr.io/aboubacar3012/santu-academy:latest || true
+            
+            echo "Récupération de l'image Santu Academy..."
+            # Télécharger la dernière version de l'image Santu Academy
+            docker pull ghcr.io/aboubacar3012/santu-academy:latest
+            
+            echo "Démarrage du conteneur Santu Academy..."
+            # Démarrer le conteneur avec les variables d'environnement (vars)
+            docker run -d --name santu-academy --restart=unless-stopped -p 3000:3000 ghcr.io/aboubacar3012/santu-academy:latest
+
+            echo "Vérification du statut du conteneur Santu Academy..."
+            # Vérifier que le conteneur Santu Academy fonctionne correctement
+            docker ps | grep santu-academy
+          EOF
+          echo "Production Santu Academy terminé"
+
+      # Étape finale : Message de succès
+      - name: "Fin du workflow de déploiement Santu Academy"
+        run: echo "Production Santu Academy terminé avec succès."
+        if: success()
+
+  # Job 5: Vérification du conteneur Santu Academy
+  verify-santu-academy-container:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [deploy-santu-academy]
+    steps:
+      - name: "Vérification du conteneur Docker sur le serveur de production (Santu Academy)"
+        shell: bash
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << EOF
+            echo "Vérification du statut du conteneur Santu Academy..."
+            for i in {1..5}; do
+              if docker ps | grep santu-academy && curl --fail http://localhost:3000; then
+                echo "Le conteneur Santu Academy est en cours d'exécution."
+                exit 0
+              fi
+              echo "Attente du démarrage du conteneur Santu Academy... ($i/5)"
+              sleep 5
+            done
+            echo "Échec de la vérification du conteneur Santu Academy."
+            docker logs santu-academy
+            exit 1
+          EOF
+          echo "Vérification du conteneur Santu Academy terminée"
+        continue-on-error: false
