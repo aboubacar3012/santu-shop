@@ -11,9 +11,9 @@ const NotFoundPage = () => {
       <header className="pt-safe relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white">
         {/* Background elements - version statique */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500 rounded-full opacity-20 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-orange-600 rounded-full opacity-10 blur-3xl" />
-          <div className="absolute top-1/4 left-1/3 w-40 h-40 bg-orange-400 rounded-full opacity-5 blur-2xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-violet-500 rounded-full opacity-20 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-violet-600 rounded-full opacity-10 blur-3xl" />
+          <div className="absolute top-1/4 left-1/3 w-40 h-40 bg-violet-400 rounded-full opacity-5 blur-2xl" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/30" />
         </div>
 
@@ -27,7 +27,7 @@ const NotFoundPage = () => {
                 className="mb-6"
               >
                 <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight mb-4">
-                  <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent">
                     404
                   </span>
                 </h1>
@@ -68,7 +68,7 @@ const NotFoundPage = () => {
         >
           {/* Illustration ou icône */}
           <div className="mb-8">
-            <div className="mx-auto w-32 h-32 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+            <div className="mx-auto w-32 h-32 bg-gradient-to-r from-violet-400 to-violet-600 rounded-full flex items-center justify-center">
               <svg
                 className="w-16 h-16 text-white"
                 fill="none"
@@ -92,30 +92,29 @@ const NotFoundPage = () => {
               Oups ! Cette page semble introuvable
             </h3>
             <p className="text-gray-600 mb-6">
-              Il se peut que l&apos;URL soit incorrecte ou que la page ait été supprimée. 
-              Pas de panique, vous pouvez retourner à l&apos;accueil ou explorer nos cours.
+              Il se peut que l&apos;URL soit incorrecte ou que la page ait été supprimée.
+              Pas de panique, vous pouvez retourner à l&apos;accueil ou explorer le site.
             </p>
           </div>
 
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/">
+            <Link href="/home">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+                className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-violet-500 to-violet-600 text-white font-semibold rounded-lg shadow-lg hover:from-violet-600 hover:to-violet-700 transition-all duration-200"
               >
                 Retour à l&apos;accueil
               </motion.button>
             </Link>
-            
-            <Link href="/learning">
+            <Link href="/account">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-3 border-2 border-orange-500 text-orange-600 font-semibold rounded-lg hover:bg-orange-50 transition-all duration-200"
+                className="w-full sm:w-auto px-8 py-3 border-2 border-violet-500 text-violet-600 font-semibold rounded-lg hover:bg-violet-50 transition-all duration-200"
               >
-                Voir les cours
+                Espace client
               </motion.button>
             </Link>
           </div>
@@ -126,40 +125,39 @@ const NotFoundPage = () => {
               Vous pourriez être intéressé par :
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link href="/learning" className="block">
-                <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200">
+              <Link href="/home" className="block">
+                <div className="p-4 border border-gray-200 rounded-lg hover:border-violet-300 hover:bg-violet-50 transition-all duration-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-violet-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                       </svg>
                     </div>
-                    <span className="text-gray-700 font-medium">Catalogue de cours</span>
+                    <span className="text-gray-700 font-medium">Accueil</span>
                   </div>
                 </div>
               </Link>
-              
-              <Link href="/learning" className="block">
-                <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200">
+              <Link href="/account" className="block">
+                <div className="p-4 border border-gray-200 rounded-lg hover:border-violet-300 hover:bg-violet-50 transition-all duration-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+                    <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-violet-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-gray-700 font-medium">Projets </span>
+                    <span className="text-gray-700 font-medium">Espace client</span>
                   </div>
                 </div>
               </Link>
-              <Link href="/learning" className="block">
-                <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200">
+              <Link href="/public" className="block">
+                <div className="p-4 border border-gray-200 rounded-lg hover:border-violet-300 hover:bg-violet-50 transition-all duration-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+                    <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-violet-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                       </svg>
                     </div>
-                    <span className="text-gray-700 font-medium">Quiz et évaluations</span>
+                    <span className="text-gray-700 font-medium">Annonces</span>
                   </div>
                 </div>
               </Link>

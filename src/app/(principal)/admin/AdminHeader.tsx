@@ -31,12 +31,12 @@ export default function AdminHeader({ tab, onTabChange }: Props) {
             onClick={() => onTabChange("create")}
             className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
               tab === "create"
-                ? "border-orange-200 bg-orange-50 text-slate-900"
+                ? "border-violet-200 bg-violet-50 text-slate-900"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             <span className="inline-flex items-center gap-2">
-              <Plus className="w-4 h-4 text-orange-500" />
+              <Plus className="w-4 h-4 text-violet-500" />
               Création d’envoi
             </span>
           </button>
@@ -46,12 +46,12 @@ export default function AdminHeader({ tab, onTabChange }: Props) {
             onClick={() => onTabChange("invoices")}
             className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
               tab === "invoices"
-                ? "border-orange-200 bg-orange-50 text-slate-900"
+                ? "border-violet-200 bg-violet-50 text-slate-900"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             <span className="inline-flex items-center gap-2">
-              <FileText className="w-4 h-4 text-orange-500" />
+              <FileText className="w-4 h-4 text-violet-500" />
               Factures
             </span>
           </button>
@@ -61,12 +61,12 @@ export default function AdminHeader({ tab, onTabChange }: Props) {
             onClick={() => onTabChange("parcels")}
             className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
               tab === "parcels"
-                ? "border-orange-200 bg-orange-50 text-slate-900"
+                ? "border-violet-200 bg-violet-50 text-slate-900"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             <span className="inline-flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-orange-500" />
+              <ClipboardList className="w-4 h-4 text-violet-500" />
               Colis
             </span>
           </button>

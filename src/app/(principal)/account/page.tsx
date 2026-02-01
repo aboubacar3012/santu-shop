@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   BadgeCheck,
-  Box,
   Calendar,
   ChevronRight,
   ClipboardList,
@@ -12,10 +13,10 @@ import {
   MapPin,
   Package,
   Phone,
-  Search,
   Shield,
   Truck,
   User,
+  Box
 } from "lucide-react";
 
 type ClientTab = "history" | "invoices" | "tracking" | "profile";
@@ -66,10 +67,6 @@ function fmtDate(iso: string) {
 
 export default function ClientPage() {
   const [tab, setTab] = useState<ClientTab>("tracking");
-  const [qHistory, setQHistory] = useState("");
-  const [qInvoices, setQInvoices] = useState("");
-  const [qTracking, setQTracking] = useState("");
-
   const [profile] = useState<ClientProfile>({
     prenom: "Abou",
     nom: "Camara",
@@ -163,43 +160,9 @@ export default function ClientPage() {
     [parcels],
   );
 
-  const filteredHistory = useMemo(() => {
-    const q = qHistory.trim().toLowerCase();
-    if (!q) return historyParcels;
-    return historyParcels.filter((p) => {
-      return (
-        p.trackingId.toLowerCase().includes(q) ||
-        p.routeLabel.toLowerCase().includes(q) ||
-        p.status.toLowerCase().includes(q) ||
-        p.recipientLabel.toLowerCase().includes(q)
-      );
-    });
-  }, [historyParcels, qHistory]);
-
-  const filteredTracking = useMemo(() => {
-    const q = qTracking.trim().toLowerCase();
-    if (!q) return trackingParcels;
-    return trackingParcels.filter((p) => {
-      return (
-        p.trackingId.toLowerCase().includes(q) ||
-        p.routeLabel.toLowerCase().includes(q) ||
-        p.status.toLowerCase().includes(q) ||
-        p.recipientLabel.toLowerCase().includes(q)
-      );
-    });
-  }, [qTracking, trackingParcels]);
-
-  const filteredInvoices = useMemo(() => {
-    const q = qInvoices.trim().toLowerCase();
-    if (!q) return invoices;
-    return invoices.filter((inv) => {
-      return (
-        inv.id.toLowerCase().includes(q) ||
-        inv.label.toLowerCase().includes(q) ||
-        inv.status.toLowerCase().includes(q)
-      );
-    });
-  }, [invoices, qInvoices]);
+  const filteredHistory = historyParcels;
+  const filteredTracking = trackingParcels;
+  const filteredInvoices = invoices;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-white text-slate-900">
@@ -218,15 +181,13 @@ export default function ClientPage() {
                 </p>
               </div>
             </div>
-
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                <p className="text-[11px] text-slate-500">Bonjour</p>
-                <p className="text-[13px] font-bold text-slate-900 truncate max-w-[220px]">
-                  {profile.prenom} {profile.nom}
-                </p>
-              </div>
-            </div>
+            <Link
+              href="/"
+              className="shrink-0 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition"
+            >
+              <ArrowLeft className="w-4 h-4 text-violet-500" />
+              Retour
+            </Link>
           </div>
 
           {/* Tabs */}
@@ -236,12 +197,12 @@ export default function ClientPage() {
               onClick={() => setTab("tracking")}
               className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
                 tab === "tracking"
-                  ? "border-orange-200 bg-orange-50 text-slate-900"
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <Truck className="w-4 h-4 text-orange-500" />
+                <Truck className="w-4 h-4 text-violet-500" />
                 Suivi
               </span>
             </button>
@@ -250,12 +211,12 @@ export default function ClientPage() {
               onClick={() => setTab("history")}
               className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
                 tab === "history"
-                  ? "border-orange-200 bg-orange-50 text-slate-900"
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-orange-500" />
+                <ClipboardList className="w-4 h-4 text-violet-500" />
                 Historique
               </span>
             </button>
@@ -264,12 +225,12 @@ export default function ClientPage() {
               onClick={() => setTab("invoices")}
               className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
                 tab === "invoices"
-                  ? "border-orange-200 bg-orange-50 text-slate-900"
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <FileText className="w-4 h-4 text-orange-500" />
+                <FileText className="w-4 h-4 text-violet-500" />
                 Factures
               </span>
             </button>
@@ -278,13 +239,13 @@ export default function ClientPage() {
               onClick={() => setTab("profile")}
               className={`shrink-0 rounded-xl px-3 py-2 text-[13px] font-semibold border transition ${
                 tab === "profile"
-                  ? "border-orange-200 bg-orange-50 text-slate-900"
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <User className="w-4 h-4 text-orange-500" />
-                Profil
+                <User className="w-4 h-4 text-violet-500" />
+                Mon profil
               </span>
             </button>
           </div>
@@ -299,33 +260,13 @@ export default function ClientPage() {
           {tab === "tracking" ? (
             <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="p-4 sm:p-6 border-b border-slate-200">
-                <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">SUIVI</p>
+                <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">SUIVI</p>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
                   Colis en cours
                 </h1>
                 <p className="text-[13px] sm:text-sm text-slate-600 mt-1">
                   Suivez vos colis (statut, destination, informations).
                 </p>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      value={qTracking}
-                      onChange={(e) => setQTracking(e.target.value)}
-                      placeholder="Rechercher (tracking, liaison, statut, destinataire)"
-                      className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setTab("history")}
-                    className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-[14px] px-4 hover:bg-slate-50 inline-flex items-center justify-center gap-2"
-                  >
-                    Voir l’historique
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </button>
-                </div>
               </div>
 
               <div className="p-4 sm:p-6">
@@ -376,20 +317,13 @@ export default function ClientPage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="mt-3">
                           <button
                             type="button"
-                            className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-[13px] hover:bg-slate-50 inline-flex items-center justify-center gap-2"
+                            className="h-8 rounded-lg bg-slate-900 text-white font-semibold text-[12px] hover:bg-slate-800 inline-flex items-center justify-center gap-1.5 px-3"
                           >
-                            <MapPin className="w-4 h-4 text-slate-500" />
-                            Voir étapes 
-                          </button>
-                          <button
-                            type="button"
-                            className="h-11 rounded-xl bg-slate-900 text-white font-bold text-[13px] hover:bg-slate-800 inline-flex items-center justify-center gap-2"
-                          >
-                            <Shield className="w-4 h-4" />
-                            Support 
+                            <Shield className="w-3.5 h-3.5" />
+                            Contacter le support
                           </button>
                         </div>
                       </div>
@@ -401,7 +335,7 @@ export default function ClientPage() {
           ) : tab === "history" ? (
             <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="p-4 sm:p-6 border-b border-slate-200">
-                <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">
+                <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">
                   HISTORIQUE
                 </p>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
@@ -410,26 +344,6 @@ export default function ClientPage() {
                 <p className="text-[13px] sm:text-sm text-slate-600 mt-1">
                   Vos colis livrés (et éventuellement annulés).
                 </p>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      value={qHistory}
-                      onChange={(e) => setQHistory(e.target.value)}
-                      placeholder="Rechercher (tracking, liaison, statut, destinataire)"
-                      className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setTab("tracking")}
-                    className="h-11 rounded-xl bg-slate-900 text-white font-bold text-[14px] px-4 hover:bg-slate-800 inline-flex items-center justify-center gap-2"
-                  >
-                    Colis en cours
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
 
               <div className="p-4 sm:p-6">
@@ -477,20 +391,13 @@ export default function ClientPage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="mt-3">
                           <button
                             type="button"
-                            className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-[13px] hover:bg-slate-50 inline-flex items-center justify-center gap-2"
+                            className="h-8 rounded-lg bg-violet-500 text-white font-semibold text-[12px] hover:bg-violet-600 inline-flex items-center justify-center gap-1.5 px-3"
                           >
-                            <Package className="w-4 h-4 text-slate-500" />
-                            Détails 
-                          </button>
-                          <button
-                            type="button"
-                            className="h-11 rounded-xl bg-orange-500 text-white font-bold text-[13px] hover:bg-orange-600 inline-flex items-center justify-center gap-2"
-                          >
-                            <Box className="w-4 h-4" />
-                            Ré-expédier 
+                            <Box className="w-3.5 h-3.5" />
+                            Ré-expédier
                           </button>
                         </div>
                       </div>
@@ -502,33 +409,13 @@ export default function ClientPage() {
           ) : tab === "invoices" ? (
             <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
               <div className="p-4 sm:p-6 border-b border-slate-200">
-                <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">FACTURES</p>
+                <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">FACTURES</p>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
                   Mes factures
                 </h1>
                 <p className="text-[13px] sm:text-sm text-slate-600 mt-1">
                   Consultez vos factures et leurs statuts.
                 </p>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      value={qInvoices}
-                      onChange={(e) => setQInvoices(e.target.value)}
-                      placeholder="Rechercher (id, libellé, statut)"
-                      className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setTab("profile")}
-                    className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-[14px] px-4 hover:bg-slate-50 inline-flex items-center justify-center gap-2"
-                  >
-                    Infos profil
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </button>
-                </div>
               </div>
 
               <div className="p-4 sm:p-6">
@@ -576,20 +463,13 @@ export default function ClientPage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="mt-3">
                           <button
                             type="button"
-                            className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-[13px] hover:bg-slate-50 inline-flex items-center justify-center gap-2"
+                            className="h-8 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold text-[12px] hover:bg-slate-50 inline-flex items-center justify-center gap-1.5 px-3"
                           >
-                            <FileText className="w-4 h-4 text-slate-500" />
-                            Voir 
-                          </button>
-                          <button
-                            type="button"
-                            className="h-11 rounded-xl bg-slate-900 text-white font-bold text-[13px] hover:bg-slate-800 inline-flex items-center justify-center gap-2"
-                          >
-                            <Package className="w-4 h-4" />
-                            Lier au colis 
+                            <FileText className="w-3.5 h-3.5 text-slate-500" />
+                            Afficher la facture
                           </button>
                         </div>
                       </div>
@@ -602,7 +482,7 @@ export default function ClientPage() {
             <section className="grid gap-4 lg:grid-cols-12">
               <div className="lg:col-span-7 rounded-3xl border border-slate-200 bg-white shadow-sm">
                 <div className="p-4 sm:p-6 border-b border-slate-200">
-                  <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">PROFIL</p>
+                  <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">PROFIL</p>
                   <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">Mon profil</h1>
                   <p className="text-[13px] sm:text-sm text-slate-600 mt-1">
                     Informations personnelles .
@@ -610,7 +490,7 @@ export default function ClientPage() {
                 </div>
 
                 <div className="p-4 sm:p-6 grid gap-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3">
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                       <p className="text-[11px] text-slate-500">Prénom</p>
                       <p className="text-[14px] font-bold text-slate-900 mt-1">{profile.prenom}</p>
@@ -655,7 +535,7 @@ export default function ClientPage() {
               <aside className="lg:col-span-5">
                 <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
                   <div className="p-4 sm:p-6 border-b border-slate-200">
-                    <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">PRÉFÉRENCES</p>
+                    <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">PRÉFÉRENCES</p>
                     <h2 className="text-lg font-extrabold text-slate-900">Sécurité & compte</h2>
                   </div>
                   <div className="p-4 sm:p-6 grid gap-2">
@@ -666,22 +546,12 @@ export default function ClientPage() {
                       <Shield className="w-4 h-4" />
                       Modifier mot de passe 
                     </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setTab("tracking")}
-                      className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-[14px] hover:bg-slate-50 inline-flex items-center justify-center gap-2"
-                    >
-                      <Truck className="w-4 h-4 text-slate-600" />
-                      Aller au suivi
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </button>
-                  </div>
+                    </div>
                 </div>
 
                 <div className="mt-4 rounded-3xl border border-slate-200 bg-white shadow-sm">
                   <div className="p-4 sm:p-6 border-b border-slate-200">
-                    <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">IDENTITÉ</p>
+                    <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">IDENTITÉ</p>
                     <h2 className="text-lg font-extrabold text-slate-900">Vérification</h2>
                     <p className="text-[13px] text-slate-600 mt-1">Informations indicatives.</p>
                   </div>

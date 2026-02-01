@@ -23,7 +23,7 @@ export default function InvoicesTab({
   return (
     <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className="p-4 sm:p-6 border-b border-slate-200">
-        <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">FACTURES</p>
+        <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">FACTURES</p>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
           Gestion des factures
         </h1>
@@ -38,15 +38,15 @@ export default function InvoicesTab({
               value={invoiceSearch}
               onChange={(e) => onInvoiceSearchChange(e.target.value)}
               placeholder="Rechercher (id, client, liaison, statut)"
-              className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+              className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
             />
           </div>
           <button
             type="button"
             onClick={onNewInvoice}
-            className="h-11 rounded-xl bg-slate-900 text-white font-bold text-[14px] px-4 hover:bg-slate-800 inline-flex items-center justify-center gap-2"
+            className="h-8 rounded-lg bg-slate-900 text-white font-semibold text-[12px] hover:bg-slate-800 inline-flex items-center justify-center gap-1.5 px-3"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             Nouvelle facture
           </button>
         </div>
@@ -94,18 +94,18 @@ export default function InvoicesTab({
                   </div>
                 </div>
 
-                <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => onMarkSent(inv.id)}
-                    className="h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-[13px] hover:bg-slate-50"
+                    className="h-8 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold text-[12px] hover:bg-slate-50 inline-flex items-center justify-center gap-1.5 px-3"
                   >
                     Marquer envoyée
                   </button>
                   <button
                     type="button"
                     onClick={() => onMarkPaid(inv.id)}
-                    className="h-11 rounded-xl bg-slate-900 text-white font-bold text-[13px] hover:bg-slate-800"
+                    className="h-8 rounded-lg bg-slate-900 text-white font-semibold text-[12px] hover:bg-slate-800 inline-flex items-center justify-center gap-1.5 px-3"
                   >
                     Marquer payée
                   </button>

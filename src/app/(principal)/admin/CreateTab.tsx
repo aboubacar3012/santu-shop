@@ -47,7 +47,7 @@ export default function CreateTab({
       <section className="lg:col-span-8">
         <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="p-3 sm:p-6 border-b border-slate-200">
-            <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">CRÉATION</p>
+            <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">CRÉATION</p>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
               Créer un envoi
             </h1>
@@ -71,7 +71,7 @@ export default function CreateTab({
                         route: e.target.value as ShipmentDraft["route"],
                       }))
                     }
-                    className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                    className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                   >
                     <option value="FR_TO_GN">France → Conakry</option>
                     <option value="GN_TO_FR">Conakry → France</option>
@@ -89,7 +89,7 @@ export default function CreateTab({
                     onClick={() => setDraft((d) => ({ ...d, service: "standard" }))}
                     className={`flex-1 h-10 rounded-xl border text-[13px] font-semibold transition ${
                       draft.service === "standard"
-                        ? "border-orange-200 bg-orange-50 text-slate-900"
+                        ? "border-violet-200 bg-violet-50 text-slate-900"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -100,7 +100,7 @@ export default function CreateTab({
                     onClick={() => setDraft((d) => ({ ...d, service: "express" }))}
                     className={`flex-1 h-10 rounded-xl border text-[13px] font-semibold transition ${
                       draft.service === "express"
-                        ? "border-orange-200 bg-orange-50 text-slate-900"
+                        ? "border-violet-200 bg-violet-50 text-slate-900"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -115,7 +115,7 @@ export default function CreateTab({
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center">
-                    <Package className="w-4.5 h-4.5 text-orange-500" />
+                    <Package className="w-4.5 h-4.5 text-violet-500" />
                   </div>
                   <div>
                     <p className="text-[13px] font-bold text-slate-900">Détails du colis</p>
@@ -139,7 +139,7 @@ export default function CreateTab({
                         onClick={() => setDraft((d) => ({ ...d, size: s }))}
                         className={`h-10 rounded-xl border text-[13px] font-bold transition ${
                           draft.size === s
-                            ? "border-orange-200 bg-orange-50 text-slate-900"
+                            ? "border-violet-200 bg-violet-50 text-slate-900"
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                         }`}
                       >
@@ -152,7 +152,7 @@ export default function CreateTab({
                 {/* Poids */}
                 <div>
                   <label className="text-[12px] font-semibold text-slate-700">
-                    Poids (kg) <span className="text-orange-600">*</span>
+                    Poids (kg) <span className="text-violet-600">*</span>
                   </label>
                   <div className="mt-2 relative">
                     <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -161,7 +161,7 @@ export default function CreateTab({
                       onChange={(e) => setDraft((d) => ({ ...d, weightKg: e.target.value }))}
                       inputMode="decimal"
                       placeholder="Ex: 2.5"
-                      className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                      className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                     />
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export default function CreateTab({
                             }
                             inputMode="numeric"
                             placeholder="Long."
-                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                           />
                         </div>
                         <input
@@ -207,14 +207,14 @@ export default function CreateTab({
                           onChange={(e) => setDraft((d) => ({ ...d, widthCm: e.target.value }))}
                           inputMode="numeric"
                           placeholder="Larg."
-                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                         <input
                           value={draft.heightCm}
                           onChange={(e) => setDraft((d) => ({ ...d, heightCm: e.target.value }))}
                           inputMode="numeric"
                           placeholder="Haut."
-                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                     </div>
@@ -234,7 +234,7 @@ export default function CreateTab({
                             }
                             inputMode="decimal"
                             placeholder="Ex: 120"
-                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                           />
                         </div>
                       </div>
@@ -247,7 +247,7 @@ export default function CreateTab({
                           value={draft.notes}
                           onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
                           placeholder="Fragile, instructions, etc."
-                          className="mt-2 w-full min-h-[40px] max-h-[110px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="mt-2 w-full min-h-[40px] max-h-[110px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                     </div>
@@ -266,8 +266,8 @@ export default function CreateTab({
                   className="w-full px-3 py-3 inline-flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
-                      <User className="w-4.5 h-4.5 text-orange-500" />
+                    <div className="w-8 h-8 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+                      <User className="w-4.5 h-4.5 text-violet-500" />
                     </div>
                     <div className="min-w-0 text-left">
                       <p className="text-[13px] font-bold text-slate-900">Expéditeur</p>
@@ -288,7 +288,7 @@ export default function CreateTab({
                       value={draft.senderName}
                       onChange={(e) => setDraft((d) => ({ ...d, senderName: e.target.value }))}
                       placeholder="Nom complet *"
-                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="relative">
@@ -300,7 +300,7 @@ export default function CreateTab({
                           }
                           inputMode="tel"
                           placeholder="Téléphone *"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                       <div className="relative">
@@ -312,7 +312,7 @@ export default function CreateTab({
                           }
                           inputMode="email"
                           placeholder="Email"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                     </div>
@@ -322,7 +322,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, senderAddress: e.target.value }))
                       }
                       placeholder="Adresse complète *"
-                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                     />
                   </div>
                 )}
@@ -338,8 +338,8 @@ export default function CreateTab({
                   className="w-full px-3 py-3 inline-flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
-                      <User className="w-4.5 h-4.5 text-orange-500" />
+                    <div className="w-8 h-8 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+                      <User className="w-4.5 h-4.5 text-violet-500" />
                     </div>
                     <div className="min-w-0 text-left">
                       <p className="text-[13px] font-bold text-slate-900">Destinataire</p>
@@ -364,7 +364,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, recipientName: e.target.value }))
                       }
                       placeholder="Nom complet *"
-                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="relative">
@@ -376,7 +376,7 @@ export default function CreateTab({
                           }
                           inputMode="tel"
                           placeholder="Téléphone *"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                       <div className="relative">
@@ -388,7 +388,7 @@ export default function CreateTab({
                           }
                           inputMode="email"
                           placeholder="Email"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                         />
                       </div>
                     </div>
@@ -398,7 +398,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, recipientAddress: e.target.value }))
                       }
                       placeholder="Adresse complète *"
-                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-orange-200/70"
+                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
                     />
                   </div>
                 )}
@@ -435,7 +435,7 @@ export default function CreateTab({
       <aside className="lg:col-span-4">
         <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="p-4 sm:p-6 border-b border-slate-200">
-            <p className="text-[11px] font-semibold tracking-wide text-orange-600/80">RÉSUMÉ</p>
+            <p className="text-[11px] font-semibold tracking-wide text-violet-600/80">RÉSUMÉ</p>
             <h2 className="text-lg font-extrabold text-slate-900">Estimation</h2>
             <p className="text-[13px] text-slate-600 mt-1">
               Calcul indicatif (UI). Ajustable selon vos règles.

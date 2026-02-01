@@ -50,36 +50,37 @@ export default function ProvidersLayout({
     }
   }, []);
 
-  useEffect(() => {
-    // Pages publiques qui ne nécessitent pas d'authentification
-    const publicPages = [
-      "/sign-in",
-      "/sign-up",
-      "/",
-      "/home",
-      "/client", // L'academy est maintenant accessible sans authentification
-      "/admin",
-    ];
+  // useEffect(() => {
+  //   // Pages publiques qui ne nécessitent pas d'authentification
+  //   const publicPages = [
+  //     "/sign-in",
+  //     "/sign-up",
+  //     "/",
+  //     "/home",
+  //     "/account", // L'academy est maintenant accessible sans authentification
+  //     "/admin",
+  //     "/not-found",
+  //   ];
 
-    // Normaliser le pathname en supprimant le slash final
-    const normalizedPathname = pathname.replace(/\/$/, "") || "/";
+  //   // Normaliser le pathname en supprimant le slash final
+  //   const normalizedPathname = pathname.replace(/\/$/, "") || "/";
 
-    // Vérifier si le pathname commence par une page publique (pour les routes dynamiques)
-    const isPublicRoute = publicPages.some((page) => {
-      if (page === "/") {
-        return normalizedPathname === "/";
-      }
-      return (
-        normalizedPathname === page ||
-        normalizedPathname.startsWith(`${page}/`)
-      );
-    });
+  //   // Vérifier si le pathname commence par une page publique (pour les routes dynamiques)
+  //   const isPublicRoute = publicPages.some((page) => {
+  //     if (page === "/") {
+  //       return normalizedPathname === "/";
+  //     }
+  //     return (
+  //       normalizedPathname === page ||
+  //       normalizedPathname.startsWith(`${page}/`)
+  //     );
+  //   });
 
-    // Rediriger vers sign-in si l'utilisateur n'est pas connecté et n'est pas sur une page publique
-    if (!isPending && session === null && !isPublicRoute) {
-      router.push("/sign-in");
-    }
-  }, [isPending, session, router, pathname]);
+  //   // Rediriger vers sign-in si l'utilisateur n'est pas connecté et n'est pas sur une page publique
+  //   if (!isPending && session === null && !isPublicRoute) {
+  //     router.push("/sign-in");
+  //   }
+  // }, [isPending, session, router, pathname]);
 
   return (
     <>
