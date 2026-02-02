@@ -71,7 +71,7 @@ export default function CreateTab({
                         route: e.target.value as ShipmentDraft["route"],
                       }))
                     }
-                    className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                    className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                   >
                     <option value="FR_TO_GN">France → Conakry</option>
                     <option value="GN_TO_FR">Conakry → France</option>
@@ -161,7 +161,7 @@ export default function CreateTab({
                       onChange={(e) => setDraft((d) => ({ ...d, weightKg: e.target.value }))}
                       inputMode="decimal"
                       placeholder="Ex: 2.5"
-                      className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                      className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                     />
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export default function CreateTab({
                             }
                             inputMode="numeric"
                             placeholder="Long."
-                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                            className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                           />
                         </div>
                         <input
@@ -207,14 +207,14 @@ export default function CreateTab({
                           onChange={(e) => setDraft((d) => ({ ...d, widthCm: e.target.value }))}
                           inputMode="numeric"
                           placeholder="Larg."
-                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] px-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                         <input
                           value={draft.heightCm}
                           onChange={(e) => setDraft((d) => ({ ...d, heightCm: e.target.value }))}
                           inputMode="numeric"
                           placeholder="Haut."
-                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] px-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                       </div>
                     </div>
@@ -234,7 +234,7 @@ export default function CreateTab({
                             }
                             inputMode="decimal"
                             placeholder="Ex: 120"
-                            className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                            className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                           />
                         </div>
                       </div>
@@ -247,7 +247,7 @@ export default function CreateTab({
                           value={draft.notes}
                           onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
                           placeholder="Fragile, instructions, etc."
-                          className="mt-2 w-full min-h-[40px] max-h-[110px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="mt-2 w-full min-h-[44px] max-h-[110px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:text-sm"
                         />
                       </div>
                     </div>
@@ -288,7 +288,7 @@ export default function CreateTab({
                       value={draft.senderName}
                       onChange={(e) => setDraft((d) => ({ ...d, senderName: e.target.value }))}
                       placeholder="Nom complet *"
-                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                      className="w-full h-11 min-h-[44px] rounded-xl border border-slate-200 bg-white px-3 text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="relative">
@@ -300,7 +300,7 @@ export default function CreateTab({
                           }
                           inputMode="tel"
                           placeholder="Téléphone *"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                       </div>
                       <div className="relative">
@@ -312,7 +312,7 @@ export default function CreateTab({
                           }
                           inputMode="email"
                           placeholder="Email"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                       </div>
                     </div>
@@ -322,7 +322,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, senderAddress: e.target.value }))
                       }
                       placeholder="Adresse complète *"
-                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:text-sm"
                     />
                   </div>
                 )}
@@ -364,7 +364,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, recipientName: e.target.value }))
                       }
                       placeholder="Nom complet *"
-                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                      className="w-full h-11 min-h-[44px] rounded-xl border border-slate-200 bg-white px-3 text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="relative">
@@ -376,7 +376,7 @@ export default function CreateTab({
                           }
                           inputMode="tel"
                           placeholder="Téléphone *"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                       </div>
                       <div className="relative">
@@ -388,7 +388,7 @@ export default function CreateTab({
                           }
                           inputMode="email"
                           placeholder="Email"
-                          className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                          className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:h-10 sm:text-sm"
                         />
                       </div>
                     </div>
@@ -398,7 +398,7 @@ export default function CreateTab({
                         setDraft((d) => ({ ...d, recipientAddress: e.target.value }))
                       }
                       placeholder="Adresse complète *"
-                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+                      className="w-full min-h-[56px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:text-sm"
                     />
                   </div>
                 )}

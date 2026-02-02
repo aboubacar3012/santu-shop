@@ -38,7 +38,7 @@ export default function InvoicesTab({
               value={invoiceSearch}
               onChange={(e) => onInvoiceSearchChange(e.target.value)}
               placeholder="Rechercher (id, client, liaison, statut)"
-              className="w-full h-11 pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-violet-200/70"
+              className="w-full h-11 min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-violet-200/70 sm:text-sm"
             />
           </div>
           <button

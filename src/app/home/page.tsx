@@ -263,7 +263,7 @@ export default function HomePage() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleTrackPackage();
                         }}
-                        className="w-full pl-10 pr-3 h-11 sm:h-12 bg-white rounded-xl border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200/70 focus:border-violet-200/70 text-[14px] sm:text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+                        className="w-full pl-10 pr-3 h-11 sm:h-12 bg-white rounded-xl border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200/70 focus:border-violet-200/70 text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
                       />
                     </div>
                     <button
@@ -313,14 +313,14 @@ export default function HomePage() {
                     value={filterSearch}
                     onChange={(e) => setFilterSearch(e.target.value)}
                     placeholder="Liaison, entreprise, message…"
-                    className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-[13px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition"
+                    className="w-full h-11 min-h-[44px] pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition sm:h-10 sm:text-sm"
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <select
                     value={filterRoute}
                     onChange={(e) => setFilterRoute((e.target.value || "") as RouteId | "")}
-                    className="h-9 rounded-lg border border-slate-200 bg-white pl-2.5 pr-7 py-1.5 text-[12px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300"
+                    className="h-11 min-h-[44px] rounded-lg border border-slate-200 bg-white pl-2.5 pr-7 py-1.5 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 sm:h-9 sm:text-sm"
                   >
                     <option value="">Toutes les liaisons</option>
                     {ROUTES.map((r) => (
