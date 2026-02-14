@@ -73,11 +73,11 @@ export function ImageCarousel({
                 key={i}
                 type="button"
                 onClick={() => setSelectedIndex(i)}
-                className={`relative flex-shrink-0 rounded-sm overflow-hidden transition-all ${
+                className={`relative flex-shrink-0 rounded-xs overflow-hidden transition-all ${
                   i === selectedIndex
-                    ? "ring-2 ring-white ring-offset-0.5 ring-offset-gray-900"
+                    ? "ring-1 ring-white ring-offset-0.5 ring-offset-gray-900"
                     : "opacity-70 hover:opacity-100"
-                } ${isCard ? "w-6 h-6 sm:w-7 sm:h-7" : "w-8 h-8 sm:w-9 sm:h-9"}`}
+                } ${isCard ? "w-8 h-8 sm:w-6 sm:h-6" : "w-8 h-8 sm:w-6 sm:h-6"}`}
               >
                 <Image
                   src={src}

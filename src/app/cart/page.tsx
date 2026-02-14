@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft, ShoppingBag, Trash2, Minus, Plus } from "lucide-react";
+import { ShoppingBag, Trash2, Minus, Plus } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 import { useCart } from "@/contexts/CartContext";
 import { shopPosts } from "@/app/home/data";
 import { OrderFormModal } from "@/components/OrderFormModal";
@@ -41,28 +42,11 @@ export default function CartPage() {
     [lines]
   );
 
+  const formatPrice = (price: number) => `${price.toLocaleString("fr-FR")} GNF`;
+
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
-          <div className="flex items-center justify-between gap-6">
-            <Link
-              href="/home"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Retour</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
-                <ShoppingBag className="w-4 h-4 text-white" />
-              </div>
-              <h1 className="text-lg font-semibold text-gray-900">Panier</h1>
-            </div>
-            <div className="w-16" aria-hidden />
-          </div>
-        </div>
-      </header>
+      <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon panier" />
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
         {lines.length === 0 ? (
@@ -183,6 +167,9 @@ export default function CartPage() {
         onClose={() => setOrderModalOpen(false)}
         onSubmit={handleOrderSubmit}
         isLoading={orderSubmitting}
+        lines={lines}
+        total={total}
+        formatPrice={formatPrice}
       />
     </div>
   );

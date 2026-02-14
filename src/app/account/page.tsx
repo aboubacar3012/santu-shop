@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
 import {
-  ArrowLeft,
   User,
   Mail,
   Package,
@@ -14,6 +13,7 @@ import {
   Loader2,
   LogIn,
 } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 import { useSession } from "@/libs/auth-client";
 
 type UserProfile = {
@@ -177,21 +177,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
-          <div className="flex items-center justify-between gap-6">
-            <Link
-              href="/home"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Retour</span>
-            </Link>
-            <h1 className="text-lg font-semibold text-gray-900">Mon compte</h1>
-            <div className="w-16" aria-hidden />
-          </div>
-        </div>
-      </header>
+      <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon compte" />
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto space-y-8">
         {/* Non connecté */}

@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { X } from "lucide-react";
-import { OrderInfoForm } from "../app/cart/OrderInfoForm";
+import { OrderInfoForm, initialOrderInfoValues } from "../app/cart/OrderInfoForm";
+import { OrderRecap } from "../app/cart/OrderRecap";
 import type { OrderInfoData } from "../app/cart/OrderInfoForm";
+import type { OrderLine } from "../app/cart/OrderRecap";
 
 export interface OrderFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: OrderInfoData) => void | Promise<void>;
   isLoading?: boolean;
+  lines: OrderLine[];
+  total: number;
+  formatPrice: (price: number) => string;
 }
 
 export function OrderFormModal({
@@ -17,7 +22,12 @@ export function OrderFormModal({
   onClose,
   onSubmit,
   isLoading = false,
+  lines,
+  total,
+  formatPrice,
 }: OrderFormModalProps) {
+  const [orderInfo, setOrderInfo] = useState<OrderInfoData>(initialOrderInfoValues);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -29,12 +39,17 @@ export function OrderFormModal({
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden";
+      setOrderInfo(initialOrderInfoValues);
     }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
   }, [isOpen, handleKeyDown]);
+
+  const handleConfirm = useCallback(() => {
+    onSubmit(orderInfo);
+  }, [orderInfo, onSubmit]);
 
   if (!isOpen) return null;
 
@@ -50,15 +65,12 @@ export function OrderFormModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="order-form-title"
-        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl border border-gray-200"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl border border-gray-200"
       >
-        <div className="p-6">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <h2
-              id="order-form-title"
-              className="text-lg font-bold text-gray-900"
-            >
-              Vos informations
+        <div className="p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <h2 id="order-form-title" className="text-lg font-bold text-gray-900">
+              Passer la commande
             </h2>
             <button
               type="button"
@@ -69,11 +81,27 @@ export function OrderFormModal({
               <X className="w-5 h-5" />
             </button>
           </div>
-          <OrderInfoForm
-            onSubmit={onSubmit}
-            onCancel={onClose}
-            isLoading={isLoading}
-          />
+
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 min-w-0">
+              <OrderInfoForm
+                value={orderInfo}
+                onChange={setOrderInfo}
+                onCancel={onClose}
+                isLoading={isLoading}
+              />
+            </div>
+            <div className="lg:w-72 flex-shrink-0">
+              <OrderRecap
+                lines={lines}
+                total={total}
+                orderInfo={orderInfo}
+                onConfirm={handleConfirm}
+                isLoading={isLoading}
+                formatPrice={formatPrice}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

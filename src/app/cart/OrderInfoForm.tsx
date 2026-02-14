@@ -14,7 +14,7 @@ export interface OrderInfoData {
   longitude?: number;
 }
 
-const initialValues: OrderInfoData = {
+export const initialOrderInfoValues: OrderInfoData = {
   nom: "",
   prenom: "",
   telephone: "",
@@ -24,26 +24,36 @@ const initialValues: OrderInfoData = {
 };
 
 export interface OrderInfoFormProps {
-  onSubmit: (data: OrderInfoData) => void;
+  onSubmit?: (data: OrderInfoData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  /** Mode contrôlé : le parent gère les données (ex. modal avec OrderRecap) */
+  value?: OrderInfoData;
+  onChange?: (data: OrderInfoData) => void;
 }
 
 export function OrderInfoForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  value,
+  onChange,
 }: OrderInfoFormProps) {
-  const [data, setData] = useState<OrderInfoData>(initialValues);
+  const [internalData, setInternalData] = useState<OrderInfoData>(initialOrderInfoValues);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
 
-  const update = (field: keyof OrderInfoData, value: string | number | undefined) => {
-    setData((prev) => ({ ...prev, [field]: value }));
+  const isControlled = value !== undefined && onChange !== undefined;
+  const data = isControlled ? value! : internalData;
+
+  const update = (field: keyof OrderInfoData, val: string | number | undefined) => {
+    const next = { ...data, [field]: val };
+    if (isControlled) onChange(next);
+    else setInternalData(next);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(data);
+    if (onSubmit) onSubmit(data);
   };
 
   const handleUseGps = () => {
@@ -64,13 +74,17 @@ export function OrderInfoForm({
   };
 
   const inputClass =
-    "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-shadow";
+    "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-shadow";
+  const labelClass = "block text-xs font-medium text-gray-700 mb-0.5";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+    <form
+      onSubmit={isControlled ? (e) => e.preventDefault() : handleSubmit}
+      className="space-y-3"
+    >
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div>
-          <label htmlFor="order-prenom" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="order-prenom" className={labelClass}>
             Prénom <span className="text-red-500">*</span>
           </label>
           <input
@@ -84,7 +98,7 @@ export function OrderInfoForm({
           />
         </div>
         <div>
-          <label htmlFor="order-nom" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="order-nom" className={labelClass}>
             Nom <span className="text-red-500">*</span>
           </label>
           <input
@@ -100,8 +114,8 @@ export function OrderInfoForm({
       </div>
 
       <div>
-        <label htmlFor="order-tel" className="block text-sm font-medium text-gray-700 mb-1">
-          Numéro de téléphone <span className="text-red-500">*</span>
+        <label htmlFor="order-tel" className={labelClass}>
+          Téléphone <span className="text-red-500">*</span>
         </label>
         <input
           id="order-tel"
@@ -114,38 +128,39 @@ export function OrderInfoForm({
         />
       </div>
 
-      <div>
-        <label htmlFor="order-quartier" className="block text-sm font-medium text-gray-700 mb-1">
-          Quartier <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="order-quartier"
-          type="text"
-          required
-          value={data.quartier}
-          onChange={(e) => update("quartier", e.target.value)}
-          className={inputClass}
-          placeholder="Quartier"
-        />
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div>
+          <label htmlFor="order-quartier" className={labelClass}>
+            Quartier <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="order-quartier"
+            type="text"
+            required
+            value={data.quartier}
+            onChange={(e) => update("quartier", e.target.value)}
+            className={inputClass}
+            placeholder="Quartier"
+          />
+        </div>
+        <div>
+          <label htmlFor="order-commune" className={labelClass}>
+            Commune <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="order-commune"
+            type="text"
+            required
+            value={data.commune}
+            onChange={(e) => update("commune", e.target.value)}
+            className={inputClass}
+            placeholder="Commune"
+          />
+        </div>
       </div>
 
       <div>
-        <label htmlFor="order-commune" className="block text-sm font-medium text-gray-700 mb-1">
-          Commune <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="order-commune"
-          type="text"
-          required
-          value={data.commune}
-          onChange={(e) => update("commune", e.target.value)}
-          className={inputClass}
-          placeholder="Commune"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="order-ville" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="order-ville" className={labelClass}>
           Ville <span className="text-red-500">*</span>
         </label>
         <input
@@ -160,49 +175,51 @@ export function OrderInfoForm({
       </div>
 
       <div>
-        <span className="block text-sm font-medium text-gray-700 mb-1">
-          Position GPS <span className="text-gray-400 font-normal">(optionnel)</span>
+        <span className={labelClass}>
+          GPS <span className="text-gray-400 font-normal">(optionnel)</span>
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleUseGps}
             disabled={gpsStatus === "loading"}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-60"
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-3.5 h-3.5" />
             {gpsStatus === "loading"
-              ? "Récupération…"
+              ? "…"
               : gpsStatus === "ok"
-                ? "Position enregistrée"
+                ? "OK"
                 : gpsStatus === "error"
                   ? "Réessayer"
-                  : "Utiliser ma position"}
+                  : "Ma position"}
           </button>
           {data.latitude != null && data.longitude != null && (
-            <span className="text-xs text-gray-500">
-              {data.latitude.toFixed(5)}, {data.longitude.toFixed(5)}
+            <span className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[140px]">
+              {data.latitude.toFixed(4)}, {data.longitude.toFixed(4)}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-2 pt-2 sm:pt-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="flex-1 py-2.5 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+          className={`rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 py-2 px-3 sm:py-2.5 sm:px-4 ${isControlled ? "w-full" : "flex-1"}`}
         >
           Annuler
         </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 transition-colors disabled:opacity-50"
-        >
-          {isLoading ? "Envoi…" : "Confirmer la commande"}
-        </button>
+        {!isControlled && (
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex-1 py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? "Envoi…" : "Confirmer"}
+          </button>
+        )}
       </div>
     </form>
   );
