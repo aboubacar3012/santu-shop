@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { Plus, Edit2, Trash2, Store, Package, X, ShoppingCart, User, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { shopPosts, categories, type ShopPost, type CategoryId } from "@/app/home/data";
+
+const DEFAULT_IMAGE_URL = "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=800";
 
 type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 
@@ -73,7 +76,8 @@ export default function AdminPage() {
     description: "",
     categoryId: "vetements" as CategoryId,
     price: "",
-    imageGradient: "from-rose-500 to-pink-600",
+    imageUrl: DEFAULT_IMAGE_URL,
+    imageUrl2: "",
     available: true,
     quantity: "",
   });
@@ -99,7 +103,8 @@ export default function AdminPage() {
         description: product.description,
         categoryId: product.categoryId,
         price: product.price.toString(),
-        imageGradient: product.imageGradient,
+        imageUrl: product.images[0] ?? DEFAULT_IMAGE_URL,
+        imageUrl2: product.images[1] ?? "",
         available: product.available,
         quantity: product.quantity.toString(),
       });
@@ -110,12 +115,20 @@ export default function AdminPage() {
         description: "",
         categoryId: "vetements",
         price: "",
-        imageGradient: "from-rose-500 to-pink-600",
+        imageUrl: DEFAULT_IMAGE_URL,
+        imageUrl2: "",
         available: true,
         quantity: "",
       });
     }
     setIsModalOpen(true);
+  };
+
+  const getFormImages = (): string[] => {
+    const u1 = formData.imageUrl.trim() || DEFAULT_IMAGE_URL;
+    const u2 = formData.imageUrl2.trim();
+    const list = u2 ? [u1, u2] : [u1, u1];
+    return list.length >= 2 ? list : [u1, u1];
   };
 
   const handleCloseModal = () => {
@@ -136,7 +149,7 @@ export default function AdminPage() {
                 description: formData.description,
                 categoryId: formData.categoryId,
                 price: parseFloat(formData.price),
-                imageGradient: formData.imageGradient,
+                images: getFormImages(),
                 available: formData.available,
                 quantity: parseInt(formData.quantity) || 0,
               }
@@ -144,13 +157,12 @@ export default function AdminPage() {
         )
       );
     } else {
-      // Ajouter un nouveau produit
       const newProduct: ShopPost = {
         id: `p${Date.now()}`,
         title: formData.title,
         description: formData.description,
         categoryId: formData.categoryId,
-        imageGradient: formData.imageGradient,
+        images: getFormImages(),
         sellerName: "Ma Boutique",
         sellerSlug: "ma-boutique",
         likes: 0,
@@ -177,15 +189,6 @@ export default function AdminPage() {
       )
     );
   };
-
-  const gradientOptions = [
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-    "from-sky-500 to-blue-600",
-    "from-emerald-500 to-teal-600",
-    "from-purple-500 to-violet-600",
-    "from-slate-500 to-slate-700",
-  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -283,7 +286,14 @@ export default function AdminPage() {
             >
               {/* Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-50">
-                <div className={`absolute inset-0 bg-gradient-to-br ${product.imageGradient} opacity-90 hover:opacity-100 transition-opacity duration-300`} />
+                <Image
+                  src={product.images[0]}
+                  alt={product.title}
+                  fill
+                  className="object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
+                  sizes="160px"
+                  unoptimized={product.images[0].includes("pexels.com")}
+                />
               </div>
 
               {/* Content */}
@@ -634,24 +644,24 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Couleur du gradient
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-900">
+                  URL des images (au moins 2)
                 </label>
-                <div className="grid grid-cols-6 gap-2">
-                  {gradientOptions.map((gradient) => (
-                    <button
-                      key={gradient}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, imageGradient: gradient })}
-                      className={`aspect-square rounded-lg bg-gradient-to-br ${gradient} border-2 transition-all ${
-                        formData.imageGradient === gradient
-                          ? "border-gray-900 scale-110"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="Image 1 – https://images.pexels.com/..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <input
+                  type="url"
+                  value={formData.imageUrl2}
+                  onChange={(e) => setFormData({ ...formData, imageUrl2: e.target.value })}
+                  placeholder="Image 2 – https://images.pexels.com/..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
               </div>
 
               <div className="flex gap-3 pt-4">

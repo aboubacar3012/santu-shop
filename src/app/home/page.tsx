@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, User, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
+import { ProductCard } from "@/components/ProductCard";
 import { categories, shopPosts } from "./data";
 import type { CategoryId } from "./data";
 
@@ -51,7 +52,7 @@ export default function HomePage() {
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                href="/shop?tab=cart"
+                href="/cart"
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
               >
                 <ShoppingBag className="w-5 h-5 text-gray-600" />
@@ -123,50 +124,7 @@ export default function HomePage() {
                         transition={{ delay: sectionIndex * 0.1 + index * 0.05 }}
                         className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
                       >
-                        <Link
-                          href={`/shop/${product.sellerSlug}`}
-                          className="group block h-full"
-                        >
-                          <div className="h-full bg-white border border-gray-200 rounded-lg sm:rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-300">
-                            {/* Image */}
-                            <div className="relative aspect-square overflow-hidden bg-gray-50">
-                              <div className={`absolute inset-0 bg-gradient-to-br ${product.imageGradient} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-2.5 sm:p-3 md:p-3.5">
-                              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-1.5 line-clamp-2 group-hover:text-gray-700 transition-colors">
-                                {product.title}
-                              </h3>
-                              
-                              <p className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-2.5 line-clamp-2">
-                                {product.description}
-                              </p>
-
-                              {/* Prix et vendeur */}
-                              <div className="flex items-center justify-between mb-2 sm:mb-2.5">
-                                <p className="text-sm sm:text-base md:text-lg font-bold text-gray-900">
-                                  {product.price.toLocaleString("fr-FR")} GNF
-                                </p>
-                                <p className="text-[10px] sm:text-xs text-gray-400">
-                                  {product.sellerName}
-                                </p>
-                              </div>
-
-                              {/* Bouton style Stripe */}
-                              <Link
-                                href={`/shop/${product.sellerSlug}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                className="w-full py-1.5 sm:py-2 px-2 sm:px-3 bg-gray-900 text-white rounded-md sm:rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 group/btn"
-                              >
-                                <span>Voir la boutique</span>
-                                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                              </Link>
-                            </div>
-                          </div>
-                        </Link>
+                        <ProductCard product={product} />
                       </motion.div>
                     ))}
                   </div>

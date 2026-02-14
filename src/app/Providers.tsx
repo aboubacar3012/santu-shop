@@ -7,6 +7,7 @@ import applySafeAreaInsets from "@/libs/applySafeAreaInsets";
 import { Capacitor } from "@capacitor/core";
 import { Analytics } from "@vercel/analytics/next";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CartProvider } from "@/contexts/CartContext";
 
 // Create a client
 export const queryClient = new QueryClient();
@@ -85,14 +86,16 @@ export default function ProvidersLayout({
   return (
     <>
     <QueryClientProvider client={queryClient}>
-      <Analytics />
-      {isClient ? (
-          <GridLayout>{children}</GridLayout>
-      ) : (
-        <div className="w-full h-dvh overflow-auto">
-          {children}
-        </div>
-      )}
+      <CartProvider>
+        <Analytics />
+        {isClient ? (
+            <GridLayout>{children}</GridLayout>
+        ) : (
+          <div className="w-full h-dvh overflow-auto">
+            {children}
+          </div>
+        )}
+      </CartProvider>
       </QueryClientProvider>
     </>
   );

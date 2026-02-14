@@ -4,7 +4,7 @@ const nextConfig = {
   trailingSlash: false, //
   reactStrictMode: false,
   images: {
-    domains: ["static.vecteezy.com", "placehold.co"],
+    domains: ["static.vecteezy.com", "placehold.co", "images.pexels.com"],
     unoptimized: true,
   },
   // Désactiver les erreurs TS et Lint pour le build afin de contourner les blocages demandés

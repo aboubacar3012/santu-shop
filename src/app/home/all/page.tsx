@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ShoppingBag, User, ChevronRight } from "lucide-react";
+import { ArrowLeft, ShoppingBag, User } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { ProductCard } from "@/components/ProductCard";
 import { categories, shopPosts } from "../data";
 import type { CategoryId } from "../data";
 
@@ -66,7 +67,7 @@ export default function AllProductsPage() {
 
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                href="/shop?tab=cart"
+                href="/cart"
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
               >
                 <ShoppingBag className="w-5 h-5 text-gray-600" />
@@ -108,50 +109,7 @@ export default function AllProductsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.03, duration: 0.4, ease: [0.21, 0.45, 0.27, 0.9] }}
             >
-              <Link
-                href={`/shop/${product.sellerSlug}`}
-                className="group block h-full"
-              >
-                <div className="h-full bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-300">
-                  {/* Image */}
-                  <div className="relative aspect-square overflow-hidden bg-gray-50">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${product.imageGradient} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1.5 line-clamp-2 group-hover:text-gray-700 transition-colors">
-                      {product.title}
-                    </h3>
-                    
-                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-
-                    {/* Prix et vendeur */}
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-lg font-bold text-gray-900">
-                        {formatGnf(product.price)}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {product.sellerName}
-                      </p>
-                    </div>
-
-                    {/* Bouton style Stripe */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      className="w-full py-2 px-3 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 group/btn"
-                    >
-                      <span>Voir la boutique</span>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              </Link>
+              <ProductCard product={product} formatPrice={formatGnf} />
             </motion.div>
           ))}
         </div>
