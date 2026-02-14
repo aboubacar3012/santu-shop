@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   ArrowLeft,
   User,
@@ -11,13 +11,19 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  Loader2,
+  LogIn,
 } from "lucide-react";
+import { useSession } from "@/libs/auth-client";
 
-const MOCK_USER = {
-  name: "Mamadou Diallo",
-  email: "mamadou.diallo@example.com",
-  image: null as string | null,
-};
+type UserProfile = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  image: string | null;
+  phone: string | null;
+} | null;
 
 type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 
@@ -108,9 +114,50 @@ function formatGnf(amount: number) {
 const EN_COURS_STATUSES: OrderStatus[] = ["pending", "confirmed", "shipped"];
 const HISTORIQUE_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
 
+function displayName(profile: UserProfile): string {
+  if (!profile) return "";
+  const parts = [profile.firstName, profile.lastName].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : profile.email;
+}
+
 export default function AccountPage() {
-  const user = MOCK_USER;
+  const { data: session, isPending: sessionPending } = useSession();
+  const [profile, setProfile] = useState<UserProfile>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"en-cours" | "historique">("en-cours");
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setProfileLoading(true);
+    fetch("/api/users/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data)
+          setProfile({
+            id: data.id,
+            firstName: data.firstName ?? null,
+            lastName: data.lastName ?? null,
+            email: data.email,
+            image: data.image ?? null,
+            phone: data.phone ?? null,
+          });
+        else if (!cancelled) setProfile(null);
+      })
+      .catch(() => {
+        if (!cancelled) setProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setProfileLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user?.id]);
 
   const ordersEnCours = useMemo(
     () => MOCK_ORDERS.filter((o) => EN_COURS_STATUSES.includes(o.status)),
@@ -121,6 +168,12 @@ export default function AccountPage() {
     []
   );
   const displayedOrders = activeTab === "en-cours" ? ordersEnCours : ordersHistorique;
+
+  const isLoading = sessionPending || (session?.user && profileLoading);
+  const isLoggedIn = !!session?.user;
+  const userDisplayName = profile ? displayName(profile) : (session?.user?.email ?? "");
+  const userEmail = profile?.email ?? session?.user?.email ?? "";
+  const userImage = profile?.image ?? session?.user?.image ?? null;
 
   return (
     <div className="min-h-screen bg-white">
@@ -141,43 +194,91 @@ export default function AccountPage() {
       </header>
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto space-y-8">
-        {/* Profil */}
-        <section className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <User className="w-5 h-5 text-gray-500" />
-            Informations personnelles
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-              {user.image ? (
-                <img
-                  src={user.image}
-                  alt=""
-                  className="w-full h-full rounded-xl object-cover"
-                />
-              ) : (
-                <User className="w-10 h-10 text-gray-400" />
-              )}
+        {/* Non connecté */}
+        {!sessionPending && !isLoggedIn && (
+          <section className="rounded-xl border border-gray-200 bg-white p-8 sm:p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-gray-400" />
             </div>
-            <div className="space-y-4 flex-1 min-w-0">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  Nom
-                </p>
-                <p className="text-gray-900 font-medium">{user.name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5" />
-                  Email
-                </p>
-                <p className="text-gray-900">{user.email}</p>
-              </div>
-            </div>
-          </div>
-        </section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Connectez-vous à votre compte
+            </h2>
+            <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+              Accédez à vos informations et à l’historique de vos commandes.
+            </p>
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-gray-900 bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              Se connecter
+            </Link>
+          </section>
+        )}
 
-        {/* Commandes */}
+        {/* Chargement profil */}
+        {isLoading && (
+          <section className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row gap-6 items-center">
+              <div className="w-20 h-20 rounded-xl bg-gray-100 animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-3 w-full">
+                <div className="h-5 bg-gray-100 rounded animate-pulse w-32" />
+                <div className="h-4 bg-gray-100 rounded animate-pulse w-48" />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Profil (connecté et chargé) */}
+        {isLoggedIn && !isLoading && (
+          <section className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              <User className="w-5 h-5 text-gray-500" />
+              Informations personnelles
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-6">
+              <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {userImage ? (
+                  <img
+                    src={userImage}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-10 h-10 text-gray-400" />
+                )}
+              </div>
+              <div className="space-y-4 flex-1 min-w-0">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Nom
+                  </p>
+                  <p className="text-gray-900 font-medium">
+                    {userDisplayName || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5" />
+                    Email
+                  </p>
+                  <p className="text-gray-900">{userEmail}</p>
+                </div>
+                {profile?.phone && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Téléphone
+                    </p>
+                    <p className="text-gray-900">{profile.phone}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Commandes (affichée uniquement si connecté) */}
+        {isLoggedIn && (
         <section className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <div className="p-6 sm:p-8 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -270,6 +371,7 @@ export default function AccountPage() {
             </ul>
           )}
         </section>
+        )}
       </main>
     </div>
   );

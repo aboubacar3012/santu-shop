@@ -1,16 +1,6 @@
-import { twoFactorClient } from "better-auth/plugins";
 import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-  plugins: [
-    twoFactorClient({
-      onTwoFactorRedirect() {
-        // Cette fonction sera appelée globalement si twoFactorRedirect est true
-        // Mais on gère cela dans le composant sign-in avec onSuccess
-      },
-    }),
-  ],
-});
+export const authClient = createAuthClient({});
 
 export const { signIn, signUp, signOut, useSession } = authClient;
 

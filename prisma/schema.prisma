@@ -17,20 +17,8 @@ datasource db {
 enum Role {
   OWNER
   ADMIN
-  EDITOR
+  SELLER
   USER
-}
-
-enum SubscriptionType {
-  FREE
-  PRO
-  BUSINESS
-  ENTERPRISE
-  TEAM
-  TRIAL
-  LIFETIME
-  STUDENT
-  CUSTOM
 }
 
 enum ActionType {
@@ -43,6 +31,117 @@ enum ActionType {
   FORGOTPASSWORD
   RESETPASSWORD
 }
+
+// --- E-commerce (boutiques, produits, commandes) ---
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+/// Catégorie de produits (vetements, chaussures, electronique, maisons, autres).
+model Category {
+  id          String    @id // slug: vetements, chaussures, etc.
+  label       String
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products Product[]
+
+  @@map("category")
+}
+
+/// Vendeur / boutique (sellerName, sellerSlug dans l’UI).
+model Seller {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  userId    String?  // optionnel : propriétaire de la boutique (User)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  products Product[]
+
+  @@map("seller")
+}
+
+/// Produit d’une boutique (ShopPost dans l’UI : title, description, images, price, etc.).
+model Product {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  categoryId    String
+  sellerId      String
+  images        String[]  // URLs des images
+  price         Int       // en GNF (ou centimes)
+  originalPrice Int?      // prix barré si promo
+  available     Boolean   @default(true)
+  quantity      Int       @default(0)
+  likes         Int       @default(0)
+  comments      Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  seller     Seller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@map("product")
+}
+
+/// Commande client (données du formulaire OrderInfoForm + total + statut).
+model Order {
+  id                 String      @id @default(uuid())
+  userId             String?     // client (optionnel pour invité)
+  status             OrderStatus @default(PENDING)
+  total              Int         // total en GNF
+  customerFirstName  String      // prénom
+  customerLastName   String      // nom
+  customerPhone      String
+  district           String?    // quartier
+  commune            String?
+  city               String?
+  latitude           Float?
+  longitude          Float?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("order")
+}
+
+/// Ligne de commande (produit + quantité + prix unitaire au moment de la commande).
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  productId    String
+  productTitle String   // snapshot du titre
+  quantity     Int
+  unitPrice    Int      // prix unitaire en GNF au moment de la commande
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_item")
+}
+
+// --- Auth & utilisateur ---
 
 /// Représente un utilisateur de l'application.
 /// Contient les informations personnelles de base (nom, email, téléphone, etc.).
@@ -58,15 +157,8 @@ model User {
   image            String?
   phone            String?
   isVerified       Boolean          @default(false)
-  subscriptionType SubscriptionType @default(FREE)
   isActive         Boolean          @default(true)
-  twoFactorEnabled Boolean          @default(false) // Champ requis par Better Auth pour le plugin twoFactor
-
-  // Stripe subscription fields
-  stripeCustomerId     String?   @unique // ID du client dans Stripe
-  stripeSubscriptionId String?   @unique // ID de l'abonnement actif
-  subscriptionStatus   String? // active, canceled, past_due, etc. (depuis Stripe)
-  subscriptionEndDate  DateTime? // Date de fin d'abonnement (si annulé)
+  role             Role             @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,9 +166,8 @@ model User {
   // Relations
   sessions        Session[]
   accounts        Account[]
-  loginHistory    LoginHistory[]
-  twoFactors      TwoFactor[]
-  lessonProgress  LessonProgress[]
+  orders          Order[]
+  sellers         Seller[]
 
   @@unique([email])
   @@map("user")
@@ -150,42 +241,3 @@ model Verification {
   @@map("verification")
 }
 
-/// Historique des connexions d'un utilisateur.
-/// Enregistre chaque tentative de connexion avec le provider utilisé et la date/heure.
-/// Utile pour le suivi de sécurité et l'audit des accès.
-
-model LoginHistory {
-  id             String   @id @default(uuid())
-  providerName   String
-  loginTimestamp DateTime @default(now())
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@map("loginHistory")
-}
-
-model TwoFactor {
-  id          String @id
-  secret      String
-  backupCodes String
-  userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("twoFactor")
-}
-
-/// Progression des leçons par utilisateur (courseSlug-lessonSlug).
-/// Synchronisée avec le client (localStorage when offline, API when online).
-
-model LessonProgress {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  progressKey String   // "courseSlug-lessonSlug"
-  completedAt DateTime @default(now())
-
-  @@unique([userId, progressKey])
-  @@index([userId])
-  @@map("lessonProgress")
-}

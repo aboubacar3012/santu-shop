@@ -28,7 +28,6 @@ async function main() {
     await safeDelete(prisma.session, "Session");
     await safeDelete(prisma.account, "Account");
     await safeDelete(prisma.loginHistory, "LoginHistory");
-    await safeDelete(prisma.twoFactor, "TwoFactor");
     await safeDelete(prisma.verification, "Verification");
     await safeDelete(prisma.user, "User");
 

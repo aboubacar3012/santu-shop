@@ -74,7 +74,6 @@ export async function POST(req: NextRequest) {
         lastName: true,
         emailVerified: true,
         isVerified: true,
-        subscriptionType: true,
         isActive: true,
         createdAt: true,
       },

@@ -47,7 +47,6 @@ jobs:
           {
             echo "DATABASE_URL=${{ vars.DATABASE_URL }}"
             echo "BETTER_AUTH_SECRET=${{ vars.BETTER_AUTH_SECRET }}"
-            echo "NEXT_PUBLIC_AUTH_SECRET=${{ vars.NEXT_PUBLIC_AUTH_SECRET }}"
             echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}"
           } > .env
 

@@ -1,32 +1,33 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Image from "next/image";
-import { Plus, Edit2, Trash2, Store, Package, X, ShoppingCart, User, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Plus, Store, X } from "lucide-react";
 import { shopPosts, categories, type ShopPost, type CategoryId } from "@/app/home/data";
+import type { Seller, Order, OrderStatus } from "./types";
+import { AdminShopsSection } from "./components/AdminShopsSection";
+import { AdminShopDetailSection } from "./components/AdminShopDetailSection";
 
 const DEFAULT_IMAGE_URL = "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=800";
 
-type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
-
-interface Order {
-  id: string;
-  productId: string;
-  productTitle: string;
-  productPrice: number;
-  quantity: number;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
-  orderDate: Date;
-  status: OrderStatus;
-}
+// Extraire les boutiques uniques des données existantes pour l'état initial
+const initialSellers: Seller[] = (() => {
+  const seen = new Map<string, { name: string; slug: string }>();
+  shopPosts.forEach((p) => {
+    if (!seen.has(p.sellerSlug)) seen.set(p.sellerSlug, { name: p.sellerName, slug: p.sellerSlug });
+  });
+  return Array.from(seen.entries()).map(([slug, { name }], i) => ({
+    id: `seller-${i + 1}`,
+    name,
+    slug,
+  }));
+})();
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
+  const [selectedSellerSlug, setSelectedSellerSlug] = useState<string | null>(null);
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
-  const [products, setProducts] = useState<ShopPost[]>(shopPosts.slice(0, 10)); // Simuler les produits de la boutique
+  const [sellers, setSellers] = useState<Seller[]>(initialSellers);
+  const [products, setProducts] = useState<ShopPost[]>(() => shopPosts);
   const [orders, setOrders] = useState<Order[]>([
     {
       id: "ord1",
@@ -81,18 +82,40 @@ export default function AdminPage() {
     available: true,
     quantity: "",
   });
+  const [isShopModalOpen, setIsShopModalOpen] = useState(false);
+  const [shopFormData, setShopFormData] = useState({ name: "", slug: "" });
 
-  // Filtrer les produits par catégorie
+  // Produits de la boutique sélectionnée
+  const productsOfSelectedShop = useMemo(() => {
+    if (!selectedSellerSlug) return [];
+    return products.filter((p) => p.sellerSlug === selectedSellerSlug);
+  }, [products, selectedSellerSlug]);
+
+  // Filtrer les produits par catégorie (parmi ceux de la boutique)
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "all") return products;
-    return products.filter((p) => p.categoryId === selectedCategory);
-  }, [products, selectedCategory]);
+    if (selectedCategory === "all") return productsOfSelectedShop;
+    return productsOfSelectedShop.filter((p) => p.categoryId === selectedCategory);
+  }, [productsOfSelectedShop, selectedCategory]);
 
-  // Trouver les catégories disponibles
+  // Commandes de la boutique sélectionnée (les produits de la commande appartiennent à cette boutique)
+  const ordersOfSelectedShop = useMemo(() => {
+    if (!selectedSellerSlug) return [];
+    return orders.filter((o) => {
+      const p = products.find((pr) => pr.id === o.productId);
+      return p?.sellerSlug === selectedSellerSlug;
+    });
+  }, [orders, products, selectedSellerSlug]);
+
+  // Trouver les catégories disponibles (pour la boutique sélectionnée)
   const availableCategories = useMemo(() => {
-    const categoryIds = new Set(products.map((p) => p.categoryId));
+    const categoryIds = new Set(productsOfSelectedShop.map((p) => p.categoryId));
     return categories.filter((cat) => categoryIds.has(cat.id));
-  }, [products]);
+  }, [productsOfSelectedShop]);
+
+  const selectedSeller = useMemo(
+    () => sellers.find((s) => s.slug === selectedSellerSlug) ?? null,
+    [sellers, selectedSellerSlug]
+  );
 
 
   const handleOpenModal = (product?: ShopPost) => {
@@ -105,8 +128,8 @@ export default function AdminPage() {
         price: product.price.toString(),
         imageUrl: product.images[0] ?? DEFAULT_IMAGE_URL,
         imageUrl2: product.images[1] ?? "",
-        available: product.available,
-        quantity: product.quantity.toString(),
+        available: product.available ?? true,
+        quantity: (product.quantity ?? 0).toString(),
       });
     } else {
       setEditingProduct(null);
@@ -157,14 +180,15 @@ export default function AdminPage() {
         )
       );
     } else {
+      if (!selectedSeller) return;
       const newProduct: ShopPost = {
         id: `p${Date.now()}`,
         title: formData.title,
         description: formData.description,
         categoryId: formData.categoryId,
         images: getFormImages(),
-        sellerName: "Ma Boutique",
-        sellerSlug: "ma-boutique",
+        sellerName: selectedSeller.name,
+        sellerSlug: selectedSeller.slug,
         likes: 0,
         comments: 0,
         price: parseFloat(formData.price),
@@ -190,343 +214,127 @@ export default function AdminPage() {
     );
   };
 
+  const slugFromName = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+  const handleOpenShopModal = () => {
+    setShopFormData({ name: "", slug: "" });
+    setIsShopModalOpen(true);
+  };
+
+  const handleCloseShopModal = () => {
+    setIsShopModalOpen(false);
+    setShopFormData({ name: "", slug: "" });
+  };
+
+  const handleShopSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = shopFormData.name.trim();
+    const slug = shopFormData.slug.trim() || slugFromName(name);
+    if (!name || !slug) return;
+    if (sellers.some((s) => s.slug === slug)) {
+      alert("Une boutique avec ce slug existe déjà.");
+      return;
+    }
+    const newSeller: Seller = { id: `seller-${Date.now()}`, name, slug };
+    setSellers([...sellers, newSeller]);
+    setSelectedSellerSlug(slug);
+    setActiveTab("products");
+    handleCloseShopModal();
+  };
+
+  const handleDeleteSeller = (id: string) => {
+    if (confirm("Supprimer cette boutique ? Les produits associés ne seront plus liés.")) {
+      const slug = sellers.find((s) => s.id === id)?.slug;
+      setSellers(sellers.filter((s) => s.id !== id));
+      if (slug === selectedSellerSlug) setSelectedSellerSlug(null);
+    }
+  };
+
+  const productCountBySeller = useMemo(() => {
+    const count: Record<string, number> = {};
+    products.forEach((p) => {
+      const key = p.sellerSlug;
+      count[key] = (count[key] ?? 0) + 1;
+    });
+    return count;
+  }, [products]);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
                 <Store className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-lg font-semibold text-gray-900">Administration</h1>
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">Administration</h1>
+                {selectedSeller ? (
+                  <p className="text-sm text-gray-500">
+                    Boutique : <span className="font-medium text-gray-700">{selectedSeller.name}</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">Sélectionnez une boutique pour gérer produits et commandes</p>
+                )}
+              </div>
             </div>
+            {selectedSeller && (
+              <button
+                type="button"
+                onClick={() => setSelectedSellerSlug(null)}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Changer de boutique
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main content */}
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
-        {/* Onglets */}
-        <div className="flex gap-2 mb-6 sm:mb-8 border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab("products")}
-            className={`px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium transition-colors border-b-2 ${
-              activeTab === "products"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Produits
-          </button>
-          <button
-            onClick={() => setActiveTab("orders")}
-            className={`px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium transition-colors border-b-2 ${
-              activeTab === "orders"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Commandes
-          </button>
-        </div>
-
-        {/* Contenu des onglets */}
-        {activeTab === "products" && (
-          <>
-            {/* Actions */}
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Mes produits</h2>
-              <button
-                onClick={() => handleOpenModal()}
-                className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 sm:py-2.5 bg-gray-900 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-1.5 sm:gap-2"
-              >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Ajouter un produit</span>
-                <span className="sm:hidden">Ajouter</span>
-              </button>
-            </div>
-
-        {/* Filtres par catégorie */}
-        {availableCategories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-6">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
-                selectedCategory === "all"
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Tout
-            </button>
-            {availableCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedCategory === cat.id
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+        {!selectedSellerSlug && (
+          <AdminShopsSection
+            sellers={sellers}
+            productCountBySeller={productCountBySeller}
+            onAddShop={handleOpenShopModal}
+            onSelectShop={(slug) => {
+              setSelectedSellerSlug(slug);
+              setActiveTab("products");
+            }}
+            onDeleteShop={handleDeleteSeller}
+          />
         )}
 
-        {/* Liste des produits */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
-          {filteredProducts.map((product, index) => (
-            <div
-              key={product.id}
-              className="bg-white border border-gray-200 rounded-lg sm:rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all"
-            >
-              {/* Image */}
-              <div className="relative aspect-square overflow-hidden bg-gray-50">
-                <Image
-                  src={product.images[0]}
-                  alt={product.title}
-                  fill
-                  className="object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
-                  sizes="160px"
-                  unoptimized={product.images[0].includes("pexels.com")}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-2.5 sm:p-3 md:p-3.5">
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-1.5 line-clamp-2">
-                  {product.title}
-                </h3>
-                <p className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-2.5 line-clamp-2">
-                  {product.description}
-                </p>
-
-                <div className="mb-2 sm:mb-2.5">
-                  <p className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1">
-                    {product.price.toLocaleString("fr-FR")} GNF
-                  </p>
-                  <div className="flex items-center gap-2 text-[10px] sm:text-xs">
-                    <span className={`px-1.5 py-0.5 rounded ${product.available ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                      {product.available ? "Disponible" : "Indisponible"}
-                    </span>
-                    <span className="text-gray-500">
-                      Stock: {product.quantity}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-1.5 sm:gap-2">
-                  <button
-                    onClick={() => handleOpenModal(product)}
-                    className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 bg-gray-100 text-gray-700 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span className="hidden sm:inline">Modifier</span>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 bg-red-50 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span className="hidden sm:inline">Supprimer</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-20">
-            <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 text-lg mb-4">
-              {selectedCategory === "all" ? "Aucun produit" : "Aucun produit dans cette catégorie"}
-            </p>
-            {selectedCategory === "all" && (
-              <button
-                onClick={() => handleOpenModal()}
-                className="px-6 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                Ajouter votre premier produit
-              </button>
-            )}
-          </div>
-        )}
-          </>
-        )}
-
-        {/* Onglet Commandes */}
-        {activeTab === "orders" && (
-          <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Commandes</h2>
-            
-            <div className="space-y-4">
-              {orders.map((order, index) => {
-                const getStatusColor = (status: OrderStatus) => {
-                  switch (status) {
-                    case "pending":
-                      return "bg-yellow-100 text-yellow-700";
-                    case "confirmed":
-                      return "bg-blue-100 text-blue-700";
-                    case "shipped":
-                      return "bg-purple-100 text-purple-700";
-                    case "delivered":
-                      return "bg-green-100 text-green-700";
-                    case "cancelled":
-                      return "bg-red-100 text-red-700";
-                    default:
-                      return "bg-gray-100 text-gray-700";
-                  }
-                };
-
-                const getStatusIcon = (status: OrderStatus) => {
-                  switch (status) {
-                    case "pending":
-                      return <Clock className="w-4 h-4" />;
-                    case "confirmed":
-                      return <CheckCircle className="w-4 h-4" />;
-                    case "shipped":
-                      return <Package className="w-4 h-4" />;
-                    case "delivered":
-                      return <CheckCircle className="w-4 h-4" />;
-                    case "cancelled":
-                      return <XCircle className="w-4 h-4" />;
-                    default:
-                      return <AlertCircle className="w-4 h-4" />;
-                  }
-                };
-
-                const getStatusLabel = (status: OrderStatus) => {
-                  switch (status) {
-                    case "pending":
-                      return "En attente";
-                    case "confirmed":
-                      return "Confirmée";
-                    case "shipped":
-                      return "Expédiée";
-                    case "delivered":
-                      return "Livrée";
-                    case "cancelled":
-                      return "Annulée";
-                    default:
-                      return status;
-                  }
-                };
-
-                const isExpanded = expandedOrders.has(order.id);
-
-                return (
-                  <div
-                    key={order.id}
-                    className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-gray-300 hover:shadow-md transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-3 sm:gap-4">
-                      {/* Informations produit */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 sm:gap-3 mb-1.5">
-                          <h3 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
-                            {order.productTitle}
-                          </h3>
-                          <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">
-                            {order.orderDate.toLocaleDateString("fr-FR", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-500">
-                          <span>{order.quantity} × {order.productPrice.toLocaleString("fr-FR")} GNF</span>
-                          <span className="text-gray-300">•</span>
-                          <span className="font-semibold text-gray-900">
-                            {(order.productPrice * order.quantity).toLocaleString("fr-FR")} GNF
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Statut et actions */}
-                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value as OrderStatus)}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border-2 transition-colors cursor-pointer ${
-                            order.status === "pending"
-                              ? "bg-yellow-50 border-yellow-300 text-yellow-700 hover:bg-yellow-100"
-                              : order.status === "confirmed"
-                              ? "bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
-                              : order.status === "shipped"
-                              ? "bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-100"
-                              : order.status === "delivered"
-                              ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-                              : "bg-red-50 border-red-300 text-red-700 hover:bg-red-100"
-                          }`}
-                        >
-                          <option value="pending">En attente</option>
-                          <option value="confirmed">Confirmée</option>
-                          <option value="shipped">Expédiée</option>
-                          <option value="delivered">Livrée</option>
-                          <option value="cancelled">Annulée</option>
-                        </select>
-
-                        {/* Bouton voir détails */}
-                        <button
-                          onClick={() => {
-                            const newExpanded = new Set(expandedOrders);
-                            if (isExpanded) {
-                              newExpanded.delete(order.id);
-                            } else {
-                              newExpanded.add(order.id);
-                            }
-                            setExpandedOrders(newExpanded);
-                          }}
-                          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                        >
-                          <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          <span className="hidden sm:inline">{isExpanded ? "Masquer" : "Détails"}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Informations client (affichées si expanded) */}
-                    {isExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-[10px] sm:text-xs">
-                          <div>
-                            <p className="text-gray-500 mb-0.5">Nom</p>
-                            <p className="font-medium text-gray-900 truncate">{order.customerName}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 mb-0.5">Email</p>
-                            <p className="font-medium text-gray-900 truncate">{order.customerEmail}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 mb-0.5">Téléphone</p>
-                            <p className="font-medium text-gray-900">{order.customerPhone}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 mb-0.5">Adresse</p>
-                            <p className="font-medium text-gray-900 truncate">{order.customerAddress}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {orders.length === 0 && (
-              <div className="text-center py-20">
-                <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500 text-lg">Aucune commande</p>
-              </div>
-            )}
-          </div>
+        {selectedSellerSlug && selectedSeller && (
+          <AdminShopDetailSection
+            seller={selectedSeller}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onBackToShops={() => {
+              setSelectedSellerSlug(null);
+              setActiveTab("products");
+            }}
+            filteredProducts={filteredProducts}
+            availableCategories={availableCategories.map((c) => ({ id: c.id, label: c.label }))}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            onAddProduct={() => handleOpenModal()}
+            onEditProduct={handleOpenModal}
+            onDeleteProduct={handleDelete}
+            orders={ordersOfSelectedShop}
+            expandedOrders={expandedOrders}
+            onExpandedOrdersChange={setExpandedOrders}
+            onUpdateOrderStatus={handleUpdateOrderStatus}
+          />
         )}
       </main>
 
@@ -677,6 +485,80 @@ export default function AdminPage() {
                   className="flex-1 py-2.5 px-4 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
                 >
                   {editingProduct ? "Enregistrer" : "Ajouter"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ajouter une boutique */}
+      {isShopModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Ajouter une boutique</h2>
+              <button
+                onClick={handleCloseShopModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <form onSubmit={handleShopSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Nom de la boutique
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={shopFormData.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setShopFormData((prev) => ({
+                      ...prev,
+                      name,
+                      slug: prev.slug || slugFromName(name),
+                    }));
+                  }}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="Ex: Ma Boutique"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Slug (URL)
+                </label>
+                <input
+                  type="text"
+                  value={shopFormData.slug}
+                  onChange={(e) =>
+                    setShopFormData((prev) => ({
+                      ...prev,
+                      slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                    }))
+                  }
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="ma-boutique"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Lien : /shop/{shopFormData.slug || "…"}
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCloseShopModal}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 px-4 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                >
+                  Ajouter
                 </button>
               </div>
             </form>

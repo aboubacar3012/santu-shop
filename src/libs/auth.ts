@@ -1,5 +1,4 @@
 import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/libs/prisma";
 
@@ -21,11 +20,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-
-  // Plugins
-  plugins: [
-    twoFactor(),
-  ],
 
   // Configuration des origines de confiance
   // Liste des domaines/origines autorisés pour les requêtes CORS

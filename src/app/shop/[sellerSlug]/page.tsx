@@ -5,6 +5,7 @@ import { ArrowLeft, ShoppingBag, User, Store, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "@/libs/auth-client";
 import { ProductCard } from "@/components/ProductCard";
 import { shopPosts, categories } from "@/app/home/data";
 import type { CategoryId } from "@/app/home/data";
@@ -13,6 +14,8 @@ export default function BoutiquePage() {
   const params = useParams();
   const sellerSlug = typeof params.sellerSlug === "string" ? params.sellerSlug : "";
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | "all">("all");
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
   const { sellerName, allProducts, availableCategories } = useMemo(() => {
     const list = shopPosts.filter((p) => p.sellerSlug === sellerSlug);
@@ -95,12 +98,22 @@ export default function BoutiquePage() {
                 <ShoppingBag className="w-5 h-5 text-gray-600" />
                 <span className="absolute top-0 right-0 w-2 h-2 bg-gray-900 rounded-full" />
               </Link>
-              <Link
-                href="/account"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
-              >
-                <User className="w-5 h-5 text-gray-600" />
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/account"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
+                  title="Mon compte"
+                >
+                  <User className="w-5 h-5 text-gray-600" />
+                </Link>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  className="hidden sm:inline-flex text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Se connecter
+                </Link>
+              )}
             </div>
           </div>
         </div>
