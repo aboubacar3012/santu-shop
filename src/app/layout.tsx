@@ -16,9 +16,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Santu Express | Envoi de colis – Livraison nationale et internationale",
+  title: "Santu | Marketplace – Boutiques, produits et commandes",
   description:
-    "Service de livraison rapide, sécurisé et fiable. Envoyez vos colis en toute simplicité, suivez-les en temps réel. Tarifs compétitifs, assurance incluse.",
+    "Découvrez les boutiques et produits sur Santu. Ajoutez au panier, passez commande et suivez vos achats. Vêtements, chaussures, électronique, maison et plus.",
 };
 
 export default function RootLayout({
