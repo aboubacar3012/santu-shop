@@ -3,38 +3,98 @@
 import { motion } from "framer-motion";
 import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, shopPosts } from "../data";
-import type { CategoryId } from "../data";
+import { useProducts } from "@/app/santu-admin/hooks/useProducts";
 
-const EUR_TO_GNF = 8_500;
+type CategoryFromApi = {
+  id: string;
+  label: string;
+  slug: string;
+  description?: string;
+};
 
-function formatGnf(eur: number): string {
-  const gnf = Math.round(eur * EUR_TO_GNF);
-  return `${gnf.toLocaleString("fr-FR")} GNF`;
+type CategoriesApiResponse = {
+  categories: CategoryFromApi[];
+};
+
+async function fetchCategories(): Promise<CategoriesApiResponse> {
+  const res = await fetch("/api/categories");
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error ?? "Erreur lors du chargement des catégories");
+  }
+  return res.json();
 }
+
+const formatPrice = (price: number) =>
+  `${price.toLocaleString("fr-FR")} GNF`;
 
 function AllProductsContent() {
   const searchParams = useSearchParams();
-  const categoryId = searchParams.get("category") as CategoryId | null;
+  const categoryId = searchParams.get("category");
+
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+  const { products, isLoading: productsLoading, isError: productsError } =
+    useProducts({});
+
+  const categories = categoriesData?.categories ?? [];
 
   const category = useMemo(() => {
     if (!categoryId) return null;
-    return categories.find((c) => c.id === categoryId);
-  }, [categoryId]);
+    return categories.find((c) => c.id === categoryId) ?? null;
+  }, [categoryId, categories]);
 
-  const products = useMemo(() => {
+  const productsInCategory = useMemo(() => {
     if (!categoryId) return [];
-    return shopPosts.filter((p) => p.categoryId === categoryId);
-  }, [categoryId]);
+    return products.filter((p) => p.categoryId === categoryId);
+  }, [categoryId, products]);
 
-  if (!categoryId || !category || products.length === 0) {
+  const isLoading = categoriesLoading || productsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+        <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto">
+          <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-8" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-[3/4] bg-gray-100 rounded-xl animate-pulse"
+                style={{ animationDelay: `${i * 50}ms` }}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (productsError) {
     return (
       <div className="min-h-screen bg-white">
         <AppHeader backLink={{ href: "/home", label: "Retour" }} />
         <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto text-center">
-          <p className="text-gray-500 text-lg">Catégorie introuvable ou aucun produit disponible.</p>
+          <p className="text-red-600">Erreur lors du chargement des produits.</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!categoryId || !category || productsInCategory.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+        <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto text-center">
+          <p className="text-gray-500 text-lg">
+            Catégorie introuvable ou aucun produit disponible.
+          </p>
         </main>
       </div>
     );
@@ -42,21 +102,25 @@ function AllProductsContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <AppHeader backLink={{ href: "/home", label: "Retour" }} title={category.label} />
+      <AppHeader
+        backLink={{ href: "/home", label: "Retour" }}
+        title={category.label}
+      />
 
-      {/* Main content */}
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
-
-        {/* Grille de produits (2 colonnes sur mobile comme /home) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-5">
-          {products.map((product, index) => (
+          {productsInCategory.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03, duration: 0.4, ease: [0.21, 0.45, 0.27, 0.9] }}
+              transition={{
+                delay: index * 0.03,
+                duration: 0.4,
+                ease: [0.21, 0.45, 0.27, 0.9],
+              }}
             >
-              <ProductCard product={product} formatPrice={formatGnf} />
+              <ProductCard product={product} formatPrice={formatPrice} />
             </motion.div>
           ))}
         </div>
@@ -73,7 +137,11 @@ function AllProductsFallback() {
         <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-8" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-[3/4] bg-gray-100 rounded-xl animate-pulse" style={{ animationDelay: `${i * 50}ms` }} />
+            <div
+              key={i}
+              className="aspect-[3/4] bg-gray-100 rounded-xl animate-pulse"
+              style={{ animationDelay: `${i * 50}ms` }}
+            />
           ))}
         </div>
       </main>

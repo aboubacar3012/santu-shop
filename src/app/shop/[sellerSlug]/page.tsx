@@ -6,36 +6,74 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "@/libs/auth-client";
+import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/ProductCard";
-import { shopPosts, categories } from "@/app/home/data";
-import type { CategoryId } from "@/app/home/data";
+import { useProducts } from "@/app/santu-admin/hooks/useProducts";
+
+type CategoryFromApi = {
+  id: string;
+  label: string;
+  slug: string;
+  description?: string;
+};
+
+type CategoriesApiResponse = {
+  categories: CategoryFromApi[];
+};
+
+async function fetchCategories(): Promise<CategoriesApiResponse> {
+  const res = await fetch("/api/categories");
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.error ?? "Erreur lors du chargement des catégories");
+  }
+  return res.json();
+}
 
 export default function BoutiquePage() {
   const params = useParams();
-  const sellerSlug = typeof params.sellerSlug === "string" ? params.sellerSlug : "";
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | "all">("all");
+  const sellerSlug =
+    typeof params.sellerSlug === "string" ? params.sellerSlug : "";
+  const [selectedCategory, setSelectedCategory] = useState<string | "all">(
+    "all"
+  );
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
-  const { sellerName, allProducts, availableCategories } = useMemo(() => {
-    const list = shopPosts.filter((p) => p.sellerSlug === sellerSlug);
-    const name = list[0]?.sellerName ?? "Boutique";
-    const sorted = [...list].sort((a, b) => b.likes - a.likes);
-    
-    // Trouver les catégories disponibles pour cette boutique
-    const categoryIds = new Set(list.map((p) => p.categoryId));
-    const availableCats = categories.filter((cat) => categoryIds.has(cat.id));
-    
-    return { sellerName: name, allProducts: sorted, availableCategories: availableCats };
-  }, [sellerSlug]);
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+  const {
+    products: allProducts,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useProducts({
+    sellerSlug: sellerSlug || undefined,
+    enabled: !!sellerSlug,
+  });
 
-  // Filtrer les produits selon la catégorie sélectionnée
+  const categories = categoriesData?.categories ?? [];
+
+  const { sellerName, availableCategories } = useMemo(() => {
+    const name = allProducts[0]?.sellerName ?? "Boutique";
+    const categoryIds = new Set(allProducts.map((p) => p.categoryId));
+    const availableCats = categories.filter((cat) =>
+      categoryIds.has(cat.id)
+    );
+    return { sellerName: name, availableCategories: availableCats };
+  }, [allProducts, categories]);
+
   const products = useMemo(() => {
     if (selectedCategory === "all") return allProducts;
     return allProducts.filter((p) => p.categoryId === selectedCategory);
   }, [allProducts, selectedCategory]);
 
-  if (!sellerSlug || shopPosts.filter((p) => p.sellerSlug === sellerSlug).length === 0) {
+  const notFound =
+    !sellerSlug ||
+    (!productsLoading && allProducts.length === 0);
+
+  if (notFound) {
     return (
       <div className="min-h-screen bg-white">
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
@@ -71,13 +109,62 @@ export default function BoutiquePage() {
     );
   }
 
+  if (productsLoading && allProducts.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+          <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
+            <Link
+              href="/home"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Retour</span>
+            </Link>
+          </div>
+        </header>
+        <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto">
+          <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-8" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-[3/4] bg-gray-100 rounded-xl animate-pulse"
+                style={{ animationDelay: `${i * 50}ms` }}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+          <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
+            <Link
+              href="/home"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Retour</span>
+            </Link>
+          </div>
+        </header>
+        <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto text-center">
+          <p className="text-red-600">Erreur lors du chargement des produits.</p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header style Stripe/Vercel */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
           <div className="flex items-center justify-between gap-6">
-            {/* Logo boutique */}
             <div className="flex items-center gap-3 flex-1">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
                 <Store className="w-4 h-4 text-white" />
@@ -119,9 +206,7 @@ export default function BoutiquePage() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
-        {/* Hero section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,7 +219,6 @@ export default function BoutiquePage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-sm sm:text-base">Retour</span>
           </Link>
-          {/* Filtres par catégorie */}
           {availableCategories.length > 0 && (
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
               <button
@@ -164,14 +248,17 @@ export default function BoutiquePage() {
           )}
         </motion.div>
 
-        {/* Grille de produits */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
           {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03, duration: 0.4, ease: [0.21, 0.45, 0.27, 0.9] }}
+              transition={{
+                delay: index * 0.03,
+                duration: 0.4,
+                ease: [0.21, 0.45, 0.27, 0.9],
+              }}
             >
               <ProductCard
                 product={product}

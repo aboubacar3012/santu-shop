@@ -6,10 +6,10 @@ import { motion } from "framer-motion";
 import { ChevronRight, ShoppingCart, Check } from "lucide-react";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { useCart } from "@/contexts/CartContext";
-import type { ShopPost } from "@/app/home/data";
+import type { Product } from "@/app/santu-admin/types";
 
 export interface ProductCardProps {
-  product: ShopPost;
+  product: Product;
   /** Lien de la carte (défaut: /shop/{sellerSlug}) */
   href?: string;
   /** Classe du conteneur (ex. pour la largeur) */

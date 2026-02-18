@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import type { OrderInfoData } from "./OrderInfoForm";
-import type { ShopPost } from "@/app/home/data";
+import type { Product } from "@/app/santu-admin/types";
 
 export interface OrderLine {
-  product: ShopPost;
+  product: Product;
   quantity: number;
 }
 

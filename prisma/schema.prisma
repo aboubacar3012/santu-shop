@@ -83,8 +83,6 @@ model Product {
   originalPrice Int?      // prix barré si promo
   available     Boolean   @default(true)
   quantity      Int       @default(0)
-  likes         Int       @default(0)
-  comments      Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

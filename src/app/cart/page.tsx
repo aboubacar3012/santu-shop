@@ -6,14 +6,18 @@ import { useMemo, useState } from "react";
 import { ShoppingBag, Trash2, Minus, Plus } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { useCart } from "@/contexts/CartContext";
-import { shopPosts } from "@/app/home/data";
+import { useProducts } from "@/app/santu-admin/hooks/useProducts";
 import { OrderFormModal } from "@/components/OrderFormModal";
 import type { OrderInfoData } from "@/app/cart/OrderInfoForm";
+import type { OrderLine } from "@/app/cart/OrderRecap";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCart();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [orderSubmitting, setOrderSubmitting] = useState(false);
+
+  const { products, isLoading: productsLoading, isError: productsError } =
+    useProducts({});
 
   const handleOrderSubmit = async (data: OrderInfoData) => {
     setOrderSubmitting(true);
@@ -27,15 +31,15 @@ export default function CartPage() {
     }
   };
 
-  const lines = useMemo(() => {
+  const lines: OrderLine[] = useMemo(() => {
     return items
       .map((item) => {
-        const product = shopPosts.find((p) => p.id === item.productId);
+        const product = products.find((p) => p.id === item.productId);
         if (!product) return null;
         return { product, quantity: item.quantity };
       })
-      .filter((line): line is { product: (typeof shopPosts)[0]; quantity: number } => line !== null);
-  }, [items]);
+      .filter((line): line is OrderLine => line !== null);
+  }, [items, products]);
 
   const total = useMemo(
     () => lines.reduce((sum, { product, quantity }) => sum + product.price * quantity, 0),
@@ -44,12 +48,33 @@ export default function CartPage() {
 
   const formatPrice = (price: number) => `${price.toLocaleString("fr-FR")} GNF`;
 
+  if (productsError) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon panier" />
+        <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto text-center">
+          <p className="text-red-600">Erreur lors du chargement des produits.</p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon panier" />
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
-        {lines.length === 0 ? (
+        {productsLoading && items.length > 0 ? (
+          <div className="space-y-4">
+            {items.map((_, i) => (
+              <div
+                key={i}
+                className="h-24 bg-gray-100 rounded-xl animate-pulse"
+                style={{ animationDelay: `${i * 80}ms` }}
+              />
+            ))}
+          </div>
+        ) : lines.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center">
             <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
               <ShoppingBag className="w-10 h-10 text-gray-400" />
@@ -80,7 +105,7 @@ export default function CartPage() {
                         fill
                         className="object-cover"
                         sizes="96px"
-                        unoptimized={product.images[0].includes("pexels.com")}
+                        unoptimized={product.images[0]?.includes("pexels.com")}
                       />
                     </Link>
                     <div className="flex-1 min-w-0">
@@ -138,12 +163,12 @@ export default function CartPage() {
 
             <div className="fixed bottom-0 left-0 right-0 z-40 lg:relative lg:z-auto lg:w-80 flex-shrink-0">
               <div className="sticky top-24 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 lg:p-6 border-t lg:border border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:shadow-none lg:rounded-xl lg:bg-gray-50">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Récapitulatif</h2>
-                <div className="flex justify-between text-gray-600 mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Récapitulatif</h2>
+                <div className="flex justify-between text-gray-600 mb-1">
                   <span>Sous-total</span>
                   <span>{total.toLocaleString("fr-FR")} GNF</span>
                 </div>
-                <div className="border-t border-gray-200 pt-4 mt-4 flex justify-between items-center">
+                <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between items-center">
                   <span className="font-semibold text-gray-900">Total</span>
                   <span className="text-xl font-bold text-gray-900">
                     {total.toLocaleString("fr-FR")} GNF
@@ -152,7 +177,7 @@ export default function CartPage() {
                 <button
                   type="button"
                   onClick={() => setOrderModalOpen(true)}
-                  className="mt-6 w-full py-3 px-4 rounded-lg border-2 border-gray-900 text-gray-900 font-medium hover:bg-gray-900 hover:text-white transition-colors"
+                  className="mt-4 w-full py-3 px-4 rounded-lg border-2 border-gray-900 text-gray-900 font-medium hover:bg-gray-900 hover:text-white transition-colors"
                 >
                   Passer la commande
                 </button>
