@@ -88,15 +88,16 @@ export async function clearAllAuthData() {
   }
 }
 
-// Wrapper pour permettre l'inscription sans passer `name`
+// Wrapper pour permettre l'inscription sans nom saisi : on envoie une chaîne vide
+// pour satisfaire la validation serveur Better Auth (body.name attendu).
 export async function signUpEmailNoName(params: {
   email: string;
   password: string;
 }) {
-  // @ts-expect-error: Le SDK tape `name` comme requis, mais on ne souhaite pas l'envoyer
   return signUp.email({
     email: params.email,
     password: params.password,
+    name: "",
     fetchOptions: { disableValidation: true },
   });
 }
