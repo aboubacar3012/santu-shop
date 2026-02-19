@@ -146,6 +146,7 @@ model OrderItem {
 
 model User {
   id               String           @id @default(uuid())
+  name             String?          // Champ requis par Better Auth (optionnel côté app)
   firstName        String?
   lastName         String?
   dateOfBirth      String?

@@ -9,20 +9,16 @@ import prisma from "@/libs/prisma";
  * avec authentification par email et mot de passe.
  */
 export const auth = betterAuth({
-  // Configuration de la base de données avec Prisma
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
 
   appName: "Santu Academy",
 
-  // Activation de l'authentification par email et mot de passe
   emailAndPassword: {
     enabled: true,
   },
 
-  // Configuration des origines de confiance
-  // Liste des domaines/origines autorisés pour les requêtes CORS
   trustedOrigins: [
     "http://localhost:3001", // Port de développement alternatif
     "http://localhost:3000", // Port de développement standard
