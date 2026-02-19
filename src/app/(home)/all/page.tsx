@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductDetails } from "@/components/ProductDetails";
 import { useProducts } from "@/app/santu-admin/hooks/useProducts";
+import type { Product } from "@/app/santu-admin/types";
 
 type CategoryFromApi = {
   id: string;
@@ -34,6 +36,7 @@ const formatPrice = (price: number) =>
 function AllProductsContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -120,11 +123,21 @@ function AllProductsContent() {
                 ease: [0.21, 0.45, 0.27, 0.9],
               }}
             >
-              <ProductCard product={product} formatPrice={formatPrice} />
+              <ProductCard
+                product={product}
+                formatPrice={formatPrice}
+                onProductClick={setSelectedProduct}
+              />
             </motion.div>
           ))}
         </div>
       </main>
+
+      <ProductDetails
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        formatPrice={formatPrice}
+      />
     </div>
   );
 }

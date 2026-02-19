@@ -5,6 +5,66 @@ import { deleteImagesFromS3 } from "@/libs/s3-upload";
 import prisma from "@/libs/prisma";
 
 /**
+ * GET /api/products/[productId] — Récupère un produit par ID (route publique).
+ */
+export async function GET(
+  _req: NextRequest,
+  context: { params: Promise<{ productId: string }> }
+) {
+  try {
+    const { productId } = await context.params;
+    if (!productId) {
+      return NextResponse.json(
+        { error: "Identifiant produit manquant" },
+        { status: 400 }
+      );
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        seller: { select: { name: true, slug: true } },
+      },
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        { error: "Produit introuvable" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      product: {
+        id: product.id,
+        title: product.title,
+        description: product.description,
+        categoryId: product.categoryId,
+        images: product.images,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        available: product.available,
+        quantity: product.quantity,
+        sellerName: product.seller.name,
+        sellerSlug: product.seller.slug,
+        createdAt: product.createdAt,
+      },
+    });
+  } catch (error: unknown) {
+    console.error("Erreur récupération produit:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur lors de la récupération du produit",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/products/[productId] — Supprime un produit et toutes ses images sur S3.
  * Réservé aux utilisateurs OWNER ou ADMIN.
  */

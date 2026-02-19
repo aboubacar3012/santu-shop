@@ -8,7 +8,9 @@ import { useParams } from "next/navigation";
 import { useSession } from "@/libs/auth-client";
 import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductDetails } from "@/components/ProductDetails";
 import { useProducts } from "@/app/santu-admin/hooks/useProducts";
+import type { Product } from "@/app/santu-admin/types";
 
 type CategoryFromApi = {
   id: string;
@@ -37,6 +39,7 @@ export default function BoutiquePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | "all">(
     "all"
   );
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
@@ -262,7 +265,7 @@ export default function BoutiquePage() {
             >
               <ProductCard
                 product={product}
-                href={`/shop/product/${product.id}`}
+                onProductClick={setSelectedProduct}
               />
             </motion.div>
           ))}
@@ -274,6 +277,11 @@ export default function BoutiquePage() {
           </div>
         )}
       </main>
+
+      <ProductDetails
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }

@@ -3,11 +3,13 @@
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductDetails } from "@/components/ProductDetails";
 import { useProducts } from "@/app/santu-admin/hooks/useProducts";
+import type { Product } from "@/app/santu-admin/types";
 
 type CategoryFromApi = {
   id: string;
@@ -30,6 +32,7 @@ async function fetchCategories(): Promise<CategoriesApiResponse> {
 }
 
 export default function HomePage() {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { products, isLoading: productsLoading, isError: productsError } = useProducts({});
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -124,7 +127,10 @@ export default function HomePage() {
                           transition={{ delay: sectionIndex * 0.1 + index * 0.05 }}
                           className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
                         >
-                          <ProductCard product={product} />
+                          <ProductCard
+                            product={product}
+                            onProductClick={setSelectedProduct}
+                          />
                         </motion.div>
                       ))}
                     </div>
@@ -141,6 +147,11 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      <ProductDetails
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }

@@ -55,8 +55,6 @@ export async function GET(req: NextRequest) {
         originalPrice: p.originalPrice,
         available: p.available,
         quantity: p.quantity,
-        likes: p.likes,
-        comments: p.comments,
         sellerName: p.seller.name,
         sellerSlug: p.seller.slug,
         createdAt: p.createdAt,
