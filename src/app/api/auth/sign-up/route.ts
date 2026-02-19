@@ -1,32 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/libs/auth";
 import prisma from "@/libs/prisma";
-import { signUpEmailNoName } from "@/libs/auth-client";
-
 
 export async function POST(req: NextRequest) {
   try {
     // Vider toute session existante avant la création de compte
-    // pour éviter qu'une ancienne session interfère avec le nouveau compte
     try {
       const session = await auth.api.getSession({ headers: req.headers });
       if (session?.session?.id) {
-        // Invalider la session existante si elle existe
-        // On crée une réponse temporaire pour récupérer les headers de déconnexion
-        const signOutResponse = await auth.api.signOut({
-          headers: req.headers,
-        });
-        // Les cookies de session seront automatiquement supprimés par Better Auth
+        await auth.api.signOut({ headers: req.headers });
       }
-    } catch (error) {
-      // Ignorer les erreurs si aucune session n'existe
-      console.debug("Aucune session à déconnecter:", error);
+    } catch {
+      // Ignorer si aucune session
     }
 
     const body = await req.json();
     const { email, password } = body;
 
-    // Validation
     if (!email || !email.trim()) {
       return NextResponse.json(
         { error: "L'email est requis" },
@@ -41,22 +31,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Créer l'utilisateur via better-auth (sans nom requis, comme signUpEmailNoName)
-    const signUpResponse = await signUpEmailNoName({
-      email: email.trim(),
-      password: password,
+    // Création côté serveur via auth.api (pas de fetch = pas d'erreur "Missing Origin")
+    const signUpResponse = await auth.api.signUpEmail({
+      body: {
+        name: "",
+        email: email.trim(),
+        password,
+      },
     });
 
-    if (!signUpResponse || signUpResponse.error) {
+    if (!signUpResponse?.user?.id) {
       const errorMessage =
-        signUpResponse?.error?.message || "Erreur lors de la création de l'utilisateur";
+        (signUpResponse as { error?: { message?: string } })?.error?.message ||
+        "Erreur lors de la création de l'utilisateur";
       return NextResponse.json(
         { error: errorMessage },
         { status: 400 }
       );
     }
 
-    const userId = signUpResponse.data?.user?.id;
+    const userId = signUpResponse.user.id;
     if (!userId) {
       return NextResponse.json(
         { error: "Impossible de récupérer l'ID de l'utilisateur créé" },
