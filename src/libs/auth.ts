@@ -27,6 +27,8 @@ export const auth = betterAuth({
     "http://localhost:3001", // Port de développement alternatif
     "http://localhost:3000", // Port de développement standard
     "http://192.168.1.32:3000", // Adresse IP locale pour les tests réseau
-    "https://hub.santu.io", // URL de production
+    "https://hub.santu.io",
+    "https://www.santu.io", // Production
+    "https://santu.io",
   ],
 });
