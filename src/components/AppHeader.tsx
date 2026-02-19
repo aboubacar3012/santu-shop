@@ -44,7 +44,7 @@ export function AppHeader({ backLink, title }: AppHeaderProps) {
               <span>{backLink.label ?? "Retour"}</span>
             </Link>
           ) : (
-            <Link href="/home" className="flex items-center gap-2 shrink-0 group">
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
               <span className="text-lg font-semibold text-gray-900 tracking-tight">Santu</span>
             </Link>
           )}

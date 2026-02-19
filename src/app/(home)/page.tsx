@@ -106,7 +106,7 @@ export default function HomePage() {
                       {category.label}
                     </h2>
                     <Link
-                      href={`/home/all?category=${category.id}`}
+                      href={`//all?category=${category.id}`}
                       className="text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1 transition-colors"
                     >
                       Voir tout

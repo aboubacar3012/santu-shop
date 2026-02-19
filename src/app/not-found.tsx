@@ -11,7 +11,7 @@ export default function NotFoundPage() {
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur-xl">
         <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
           <Link
-            href="/home"
+            href="/"
             className="flex items-center gap-2 w-fit group"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center font-bold text-sm text-white group-hover:from-gray-800 group-hover:to-gray-600 transition-all">
@@ -48,7 +48,7 @@ export default function NotFoundPage() {
           </div>
 
           {/* Bouton principal */}
-          <Link href="/home" className="inline-block mb-6">
+          <Link href="/" className="inline-block mb-6">
             <motion.span
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -66,7 +66,7 @@ export default function NotFoundPage() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Link
-                href="/home"
+                href="/"
                 className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 transition-colors text-left"
               >
                 <Home className="w-4 h-4 text-gray-500 flex-shrink-0" />

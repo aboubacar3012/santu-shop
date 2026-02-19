@@ -51,7 +51,7 @@ export default function CartPage() {
   if (productsError) {
     return (
       <div className="min-h-screen bg-white">
-        <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon panier" />
+        <AppHeader backLink={{ href: "/", label: "Retour" }} title="Mon panier" />
         <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto text-center">
           <p className="text-red-600">Erreur lors du chargement des produits.</p>
         </main>
@@ -61,7 +61,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon panier" />
+      <AppHeader backLink={{ href: "/", label: "Retour" }} title="Mon panier" />
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto">
         {productsLoading && items.length > 0 ? (

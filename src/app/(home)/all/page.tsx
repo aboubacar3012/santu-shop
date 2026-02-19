@@ -59,7 +59,7 @@ function AllProductsContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+        <AppHeader backLink={{ href: "/", label: "Retour" }} />
         <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto">
           <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-8" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-5">
@@ -79,7 +79,7 @@ function AllProductsContent() {
   if (productsError) {
     return (
       <div className="min-h-screen bg-white">
-        <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+        <AppHeader backLink={{ href: "/", label: "Retour" }} />
         <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto text-center">
           <p className="text-red-600">Erreur lors du chargement des produits.</p>
         </main>
@@ -90,7 +90,7 @@ function AllProductsContent() {
   if (!categoryId || !category || productsInCategory.length === 0) {
     return (
       <div className="min-h-screen bg-white">
-        <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+        <AppHeader backLink={{ href: "/", label: "Retour" }} />
         <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto text-center">
           <p className="text-gray-500 text-lg">
             Catégorie introuvable ou aucun produit disponible.
@@ -103,7 +103,7 @@ function AllProductsContent() {
   return (
     <div className="min-h-screen bg-white">
       <AppHeader
-        backLink={{ href: "/home", label: "Retour" }}
+        backLink={{ href: "/", label: "Retour" }}
         title={category.label}
       />
 
@@ -132,7 +132,7 @@ function AllProductsContent() {
 function AllProductsFallback() {
   return (
     <div className="min-h-screen bg-white">
-      <AppHeader backLink={{ href: "/home", label: "Retour" }} />
+      <AppHeader backLink={{ href: "/", label: "Retour" }} />
       <main className="px-6 sm:px-8 lg:px-12 py-12 max-w-[1600px] mx-auto">
         <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-8" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-5">

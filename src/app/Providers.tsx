@@ -57,7 +57,7 @@ export default function ProvidersLayout({
   //     "/sign-in",
   //     "/sign-up",
   //     "/",
-  //     "/home",
+  //     "/",
   //     "/account", // L'academy est maintenant accessible sans authentification
   //     "/admin",
   //     "/not-found",

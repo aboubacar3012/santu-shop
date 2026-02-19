@@ -12,9 +12,11 @@ import {
   XCircle,
   Loader2,
   LogIn,
+  LogOut,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
-import { useSession } from "@/libs/auth-client";
+import { useSession, signOut } from "@/libs/auth-client";
 
 type UserProfile = {
   id: string;
@@ -121,10 +123,22 @@ function displayName(profile: UserProfile): string {
 }
 
 export default function AccountPage() {
+  const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
   const [profile, setProfile] = useState<UserProfile>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
   const [activeTab, setActiveTab] = useState<"en-cours" | "historique">("en-cours");
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+      router.push("/");
+    } catch {
+      setSigningOut(false);
+    }
+  };
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -177,7 +191,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <AppHeader backLink={{ href: "/home", label: "Retour" }} title="Mon compte" />
+      <AppHeader backLink={{ href: "/", label: "Retour" }} title="Mon compte" />
 
       <main className="px-6 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-[1600px] mx-auto space-y-8">
         {/* Non connecté */}
@@ -258,6 +272,21 @@ export default function AccountPage() {
                     <p className="text-gray-900">{profile.phone}</p>
                   </div>
                 )}
+                <div className="pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 text-red-600 bg-red-50 font-medium hover:bg-red-100 hover:border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {signingOut ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <LogOut className="w-4 h-4" />
+                    )}
+                    {signingOut ? "Déconnexion…" : "Se déconnecter"}
+                  </button>
+                </div>
               </div>
             </div>
           </section>
@@ -305,7 +334,7 @@ export default function AccountPage() {
               <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">Aucune commande pour le moment.</p>
               <Link
-                href="/home"
+                href="/"
                 className="inline-block mt-4 text-sm font-medium text-gray-900 hover:underline"
               >
                 Découvrir les produits

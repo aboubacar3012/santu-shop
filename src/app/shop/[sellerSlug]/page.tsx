@@ -79,7 +79,7 @@ export default function BoutiquePage() {
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
           <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
             <Link
-              href="/home"
+              href="/"
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -98,7 +98,7 @@ export default function BoutiquePage() {
             Cette boutique n'existe pas ou n'a pas encore de produits.
           </p>
           <Link
-            href="/home"
+            href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function BoutiquePage() {
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
           <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
             <Link
-              href="/home"
+              href="/"
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -145,7 +145,7 @@ export default function BoutiquePage() {
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
           <div className="px-6 sm:px-8 lg:px-12 py-4 max-w-[1600px] mx-auto">
             <Link
-              href="/home"
+              href="/"
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -213,7 +213,7 @@ export default function BoutiquePage() {
           className="mb-6 sm:mb-8 md:mb-12"
         >
           <Link
-            href="/home"
+            href="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4 sm:mb-5"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
