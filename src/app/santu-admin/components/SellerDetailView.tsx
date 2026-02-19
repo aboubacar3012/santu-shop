@@ -59,6 +59,8 @@ export function SellerDetailView({
     isError: productsError,
     error: productsErrorMessage,
     createProductMutation,
+    updateProductMutation,
+    deleteProductMutation,
     invalidateProducts,
   } = useProducts({ sellerId: seller.id });
 
@@ -100,9 +102,18 @@ export function SellerDetailView({
 
   const handleProductSubmit = (productData: CreateProductInput) => {
     if (editingProduct) {
-      // TODO: Implémenter la mise à jour via API
-      invalidateProducts();
-      handleCloseProductModal();
+      updateProductMutation.mutate(
+        { productId: editingProduct.id, data: productData },
+        {
+          onSuccess: () => {
+            handleCloseProductModal();
+            updateProductMutation.reset();
+          },
+          onError: (err) => {
+            alert(err.message || "Erreur lors de la mise à jour.");
+          },
+        }
+      );
     } else {
       createProductMutation.mutate(productData, {
         onSuccess: () => {
@@ -114,9 +125,12 @@ export function SellerDetailView({
   };
 
   const handleDeleteProduct = (id: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
-      // TODO: Implémenter la suppression via API
-      invalidateProducts();
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ? Les images associées seront également supprimées.")) {
+      deleteProductMutation.mutate(id, {
+        onError: (err) => {
+          alert(err.message || "Erreur lors de la suppression.");
+        },
+      });
     }
   };
 
@@ -263,11 +277,17 @@ export function SellerDetailView({
                         <span className="hidden sm:inline">Modifier</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 bg-red-50 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
+                        disabled={deleteProductMutation.isPending}
+                        className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 bg-red-50 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden sm:inline">Supprimer</span>
+                        <span className="hidden sm:inline">
+                          {deleteProductMutation.isPending && deleteProductMutation.variables === product.id
+                            ? "Suppression…"
+                            : "Supprimer"}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -406,8 +426,13 @@ export function SellerDetailView({
         seller={seller}
         onClose={handleCloseProductModal}
         onSubmit={handleProductSubmit}
-        isLoading={createProductMutation.isPending}
-        error={createProductMutation.error?.message}
+        isLoading={
+          createProductMutation.isPending || updateProductMutation.isPending
+        }
+        error={
+          createProductMutation.error?.message ||
+          updateProductMutation.error?.message
+        }
       />
     </div>
   );

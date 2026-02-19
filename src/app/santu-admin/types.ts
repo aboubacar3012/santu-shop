@@ -1,4 +1,3 @@
-import type { CategoryId } from "@/app/home/categories";
 
 
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
@@ -68,8 +67,3 @@ export interface CreateProductInput {
   quantity: number;
 }
 
-// Option catégorie pour les filtres (id + label)
-export interface CategoryOption {
-  id: CategoryId;
-  label: string;
-}

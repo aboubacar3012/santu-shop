@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import slugify from "slugify";
 import type { Product, ProductFormData, CreateProductInput } from "../types";
+import { useUpload } from "@/hooks/useUpload";
 import { ImageUpload } from "./ImageUpload";
 
 type Category = {
@@ -38,7 +40,14 @@ const defaultProductForm: ProductFormData = {
 export interface ProductFormModalProps {
   isOpen: boolean;
   editingProduct: Product | null;
-  seller: { name: string; slug: string };
+  /** id, name, slug requis ; firstName + lastName optionnels pour le préfixe S3 (firstname-lastname-id) */
+  seller: {
+    id: string;
+    name: string;
+    slug: string;
+    firstName?: string;
+    lastName?: string;
+  };
   onClose: () => void;
   onSubmit: (product: CreateProductInput) => void;
   isLoading?: boolean;
@@ -57,6 +66,20 @@ export function ProductFormModal({
   const [productForm, setProductForm] = useState<ProductFormData>(defaultProductForm);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const lastInitializedKeyRef = useRef<string | null>(null);
+
+  const uploadPrefix = useMemo(() => {
+    const { id, firstName, lastName } = seller;
+    if (firstName && lastName) {
+      return `${slugify(firstName, { lower: true })}-${slugify(lastName, { lower: true })}-${id}`;
+    }
+    return `sellers/${id}`;
+  }, [seller.id, seller.firstName, seller.lastName]);
+
+  const { uploadFiles, isUploading: isUploadingImages, error: uploadError } = useUpload({
+    type: "product",
+    prefix: uploadPrefix,
+  });
 
   // Récupérer les catégories depuis l'API
   const {
@@ -70,19 +93,24 @@ export function ProductFormModal({
 
   const categories = categoriesData?.categories ?? [];
 
+  const editingProductId = editingProduct?.id ?? null;
+  const initKey = isOpen ? (editingProductId ?? "new") : null;
+
   useEffect(() => {
     if (!isOpen) {
-      // Reset form when modal closes
+      lastInitializedKeyRef.current = null;
       setProductForm(defaultProductForm);
       setImages([]);
       setImagePreviews([]);
       return;
     }
 
-    // Attendre que les catégories soient chargées avant de définir la valeur par défaut
-    if (categories.length === 0 && !categoriesLoading) return;
+    if (initKey === null) return;
+    if (lastInitializedKeyRef.current === initKey) return;
 
-    if (editingProduct) {
+    lastInitializedKeyRef.current = initKey;
+
+    if (editingProductId && editingProduct) {
       setProductForm({
         title: editingProduct.title,
         description: editingProduct.description,
@@ -92,20 +120,23 @@ export function ProductFormModal({
         available: editingProduct.available ?? true,
         quantity: (editingProduct.quantity ?? 0).toString(),
       });
-      // For editing, we keep existing URLs as previews
-      setImagePreviews(editingProduct.images);
+      setImagePreviews([...editingProduct.images]);
       setImages([]);
-    } else {
-      // Utiliser la première catégorie comme valeur par défaut
-      const defaultCategoryId = categories.length > 0 ? categories[0].id : "";
-      setProductForm({
-        ...defaultProductForm,
-        categoryId: defaultCategoryId,
-      });
-      setImages([]);
-      setImagePreviews([]);
+      return;
     }
-  }, [isOpen, editingProduct, categories, categoriesLoading]);
+
+    if (categories.length === 0 && categoriesLoading) return;
+
+    const defaultCategoryId = categories.length > 0 ? categories[0].id : "";
+    setProductForm({
+      ...defaultProductForm,
+      categoryId: defaultCategoryId,
+    });
+    setImages([]);
+    setImagePreviews([]);
+    // initKey (isOpen + editingProductId) évite de réagir au changement de référence de editingProduct
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initKey, editingProductId, categories.length, categoriesLoading]);
 
   const handleImagesChange = (newImages: File[], newPreviews: string[]) => {
     setImages(newImages);
@@ -122,23 +153,31 @@ export function ProductFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isLoading) return;
+    if (isLoading || isUploadingImages) return;
 
-    // Validation: au moins 2 images requises
     const totalImages = imagePreviews.length;
     if (totalImages < 2) {
       alert("Veuillez uploader au moins 2 images");
       return;
     }
 
-    // TODO: Upload les fichiers vers un service de stockage (Cloudinary, S3, etc.)
-    // Pour l'instant, on utilise les previews comme URLs temporaires
-    // Dans un vrai projet, il faudrait :
-    // 1. Uploader les fichiers vers un service de stockage
-    // 2. Récupérer les URLs publiques
-    // 3. Utiliser ces URLs dans le produit
+    // URLs existantes (édition) + upload des nouveaux fichiers vers S3
+    const existingUrls = imagePreviews.filter((p) => !p.startsWith("blob:"));
+    let imageUrls: string[];
+    if (images.length > 0) {
+      try {
+        const uploadedUrls = await uploadFiles(images, {
+          type: "product",
+          prefix: uploadPrefix,
+        });
+        imageUrls = [...existingUrls, ...uploadedUrls];
+      } catch {
+        return; // uploadFiles already set error state
+      }
+    } else {
+      imageUrls = existingUrls;
+    }
 
-    const imageUrls = imagePreviews; // Temporaire : utiliser les previews
     const price = parseFloat(productForm.price);
     const quantity = parseInt(productForm.quantity, 10) || 0;
     const originalPriceRaw = productForm.originalPrice?.trim();
@@ -185,9 +224,9 @@ export function ProductFormModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {error && (
+          {(error || uploadError) && (
             <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {error}
+              {uploadError?.message ?? error}
             </div>
           )}
           <div>
@@ -353,14 +392,16 @@ export function ProductFormModal({
             </button>
             <button
               type="submit"
-              disabled={imagePreviews.length < 2 || isLoading}
+              disabled={imagePreviews.length < 2 || isLoading || isUploadingImages}
               className="flex-1 py-2.5 px-4 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading
-                ? "Création..."
-                : editingProduct
-                  ? "Enregistrer"
-                  : "Ajouter"}
+              {isUploadingImages
+                ? "Upload des images..."
+                : isLoading
+                  ? "Création..."
+                  : editingProduct
+                    ? "Enregistrer"
+                    : "Ajouter"}
             </button>
           </div>
         </form>

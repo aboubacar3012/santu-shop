@@ -144,8 +144,6 @@ export async function POST(req: NextRequest) {
             originalPrice: originalPriceGnf,
             available,
             quantity,
-            likes: 0,
-            comments: 0,
           },
           include: {
             seller: { select: { id: true, name: true, slug: true } },

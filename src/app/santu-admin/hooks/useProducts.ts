@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Product, CreateProductInput } from "../types";
-import type { CategoryId } from "@/app/home/categories";
 
 /** Clé de query pour les produits (tous, par sellerId ou par sellerSlug) */
 export const PRODUCTS_QUERY_KEY = (opts: {
@@ -59,7 +58,7 @@ function mapApiProductToProduct(p: ProductApi): Product {
     id: p.id,
     title: p.title,
     description: p.description,
-    categoryId: p.categoryId as CategoryId,
+    categoryId: p.categoryId,
     images: p.images,
     sellerName: p.sellerName,
     sellerSlug: p.sellerSlug,
@@ -102,6 +101,43 @@ async function createProduct(
   return json as CreateProductApiResponse;
 }
 
+async function updateProduct(
+  productId: string,
+  data: CreateProductInput
+): Promise<CreateProductApiResponse> {
+  const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      title: data.title,
+      description: data.description,
+      categoryId: data.categoryId,
+      images: data.images,
+      price: data.price,
+      originalPrice: data.originalPrice,
+      available: data.available,
+      quantity: data.quantity,
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(json.error ?? "Erreur lors de la mise à jour du produit");
+  }
+  return json as CreateProductApiResponse;
+}
+
+async function deleteProduct(productId: string): Promise<void> {
+  const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(json.error ?? "Erreur lors de la suppression du produit");
+  }
+}
+
 export interface UseProductsOptions {
   /** ID du seller pour filtrer les produits */
   sellerId?: string;
@@ -133,6 +169,21 @@ export function useProducts({
     },
   });
 
+  const updateProductMutation = useMutation({
+    mutationFn: ({ productId, data }: { productId: string; data: CreateProductInput }) =>
+      updateProduct(productId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (productId: string) => deleteProduct(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
   const products: Product[] = useMemo(() => {
     if (!productsQuery.data?.products) return [];
     return productsQuery.data.products.map(mapApiProductToProduct);
@@ -148,6 +199,8 @@ export function useProducts({
     isError: productsQuery.isError,
     error: productsQuery.error,
     createProductMutation,
+    updateProductMutation,
+    deleteProductMutation,
     invalidateProducts,
     refetch: productsQuery.refetch,
   };
